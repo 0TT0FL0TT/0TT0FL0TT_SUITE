@@ -1,0 +1,11 @@
+{
+	"id": "global-search-or-replace",
+	"name": "Global Search Or Replace",
+	"version": "2.1.2",
+	"minAppVersion": "0.15.0",
+	"description": "Advanced global search and replace functionality with regex support, property filtering, and floating panels.",
+	"author": "Otto Flott",
+	"authorUrl": "https://github.com/0TT0FL0TT",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}

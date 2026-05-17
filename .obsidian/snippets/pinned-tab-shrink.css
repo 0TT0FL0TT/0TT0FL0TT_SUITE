@@ -1,0 +1,21 @@
+.workspace .mod-root .workspace-tab-header {
+    max-width: 140px;
+}
+
+.workspace-tab-header-new-tab {
+    margin-left: 8px;
+}
+
+.workspace .mod-root .workspace-tabs.mod-stacked .workspace-tab-container .workspace-tab-header {
+  min-width: initial;
+}
+
+.workspace-tab-header:has(.mod-pinned) {
+  /* shrink if pinned */
+  max-width: 60px !important;
+
+  /* also hide the title of pinned tabs */
+  & .workspace-tab-header-inner-title {
+    display: none;
+  }
+}

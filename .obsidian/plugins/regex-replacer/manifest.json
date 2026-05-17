@@ -1,0 +1,11 @@
+{
+  "id": "regex-replacer",
+  "name": "Regex Replacer",
+  "version": "2.0.2",
+  "minAppVersion": "0.15.0",
+  "description": "Regex-Replacer with sidebar support, originally by Frank Wisniewski",
+  "author": "zanodor",
+  "authorUrl": "https://github.com/0TT0FL0TT",
+  "fundingUrl": "",
+  "isDesktopOnly": false
+}

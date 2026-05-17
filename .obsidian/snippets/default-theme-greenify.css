@@ -1,0 +1,111 @@
+/* greenify.css - Green accent snippet for Obsidian Default Theme with light/dark support */
+
+/* Light theme styles */
+.theme-light {
+  /* Title bar background (desktop & mobile) */
+  .titlebar, 
+  .workspace-tab-header-container,
+  .workspace-ribbon.mod-left,
+  .workspace-ribbon.mod-right,
+  .mobile-navbar,
+  .status-bar {
+    background-color: #d5e2d5 !important;
+    color: #1C1B1F !important;
+  }
+
+  /* Active tab underline/accent */
+  .workspace-tab-header.is-active,
+  .mobile-tab-header.is-active {
+    border-bottom: 2px solid #95b895 !important;
+  }
+
+  /* Sidebar/Drawer Header Accent */
+  .workspace-drawer-header,
+  .nav-folder.mod-root > .nav-folder-title,
+  .mobile-toolbar {
+    background-color: #d5e2d5 !important;
+    color: #1C1B1F !important;
+  }
+  
+  /* Mobile-specific elements */
+  .mobile-toolbar-options-container {
+    background-color: #d5e2d5 !important;
+  }
+}
+
+/* Dark theme styles */
+.theme-dark {
+  /* Title bar background (desktop & mobile) */
+  .titlebar, 
+  .workspace-tab-header-container,
+  .workspace-ribbon.mod-left,
+  .workspace-ribbon.mod-right,
+  .mobile-navbar,
+  .status-bar {
+    background-color: #2a382a !important;
+    color: #e8e8e8 !important;
+  }
+
+  /* Active tab underline/accent */
+  .workspace-tab-header.is-active,
+  .mobile-tab-header.is-active {
+    border-bottom: 2px solid #4a634a !important;
+  }
+
+  /* Sidebar/Drawer Header Accent */
+  .workspace-drawer-header,
+  .nav-folder.mod-root > .nav-folder-title,
+  .mobile-toolbar {
+    background-color: #2a382a !important;
+    color: #e8e8e8 !important;
+  }
+  
+  /* Mobile-specific elements */
+  .mobile-toolbar-options-container {
+    background-color: #2a382a !important;
+  }
+}
+
+/* Light theme - Selection/Highlight Color */
+.theme-light {
+  .markdown-rendered ::selection,
+  .cm-s-obsidian .cm-selectionBackground,
+  .cm-s-obsidian .CodeMirror-selected {
+    background: #d5e2d5 !important;
+    color: #1C1B1F !important;
+  }
+
+  /* Button Accent */
+  button.mod-cta, .mod-cta {
+    background-color: #95b895 !important;
+    color: #1C1B1F !important;
+    border: none !important;
+  }
+
+  input[type="checkbox"]:checked,
+  input[type="radio"]:checked {
+    accent-color: #95b895;
+  }
+}
+
+/* Dark theme - Selection/Highlight Color */
+.theme-dark {
+  .markdown-rendered ::selection,
+  .cm-s-obsidian .cm-selectionBackground,
+  .cm-s-obsidian .CodeMirror-selected {
+    background: #4a634a !important;
+    color: #e8e8e8 !important;
+  }
+
+  /* Button Accent */
+  button.mod-cta, .mod-cta {
+    background-color: #2a382a !important;
+    color: #e8e8e8 !important;
+    border: none !important;
+  }
+
+  input[type="checkbox"]:checked,
+  input[type="radio"]:checked {
+    accent-color: #4a634a;
+  }
+}

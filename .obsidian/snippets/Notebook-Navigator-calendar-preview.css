@@ -1,0 +1,6 @@
+.nn-navigation-calendar-hover-tooltip * {
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    max-height: none !important;
+    overflow: visible !important;
+}

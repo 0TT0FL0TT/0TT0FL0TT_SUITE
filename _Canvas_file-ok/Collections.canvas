@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{
+			"id":"mp917n2b",
+			"type":"text",
+			"text":"```meta-bind-button\nstyle: primary\nlabel: Zsidó messiás\nid: trigger-ago\naction:\n  type: open\n  link: obsidian://search?&query=file%3A%20%2F%5E(Messi%C3%A1s%7CZsid%C3%B3%20eszkatol%C3%B3gia)%5C.md%2F%20%2F(zsidó%7Cmessiás)%2F\n```\n```meta-bind-button\nstyle: default\nlabel: Block 250613\nid: trigger-vjm\naction:\n  type: open\n  link: obsidian://search?query=file%3A%20%2F%5E(Messi%C3%A1s%7CZsid%C3%B3%20eszkatol%C3%B3gia)%5C.md%2F%20block%3A%20250613\n```\n- [[Messiás#^250613]]\n- [[Zsidó eszkatológia#^250613]]",
+			"styleAttributes":{},
+			"extra":"cs-extra",
+			"bg":"cs-bg-gradient",
+			"x":920,
+			"y":-420,
+			"width":320,
+			"height":240
+		}
+	],
+	"edges":[],
+	"metadata":{
+		"version":"1.0-1.0",
+		"frontmatter":{}
+	}
+}

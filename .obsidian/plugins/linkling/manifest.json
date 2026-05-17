@@ -1,0 +1,10 @@
+{
+  "id": "linkling",
+  "name": "Linkling",
+  "version": "2.1.1",
+  "minAppVersion": "0.15.0",
+  "description": "Advanced link and text search with property filters and sidebar view.",
+  "author": "Otto Flott",
+  "authorUrl": "https://github.com/0TT0FL0TT",
+  "isDesktopOnly": false
+}

@@ -1,0 +1,67 @@
+/* hides "Properties" title, also hides dropdown */
+.metadata-properties-heading {
+  display: none;
+}
+
+.metadata-properties, .metadata-properties *, .metadata-add-button, .metadata-properties-heading {
+  font-family: var(--font-monospace), "azeret mono", "space mono", "jetbrains mono";
+  --metadata-label-font-size: 9.5px;
+  --metadata-input-font-size: 9.5px;
+}
+
+/*.metadata-property[data-property-key="status"] {*/
+    background: green; 
+    color: black;
+}
+
+body {
+  --metadata-label-font-weight: 500;
+  --metadata-label-text-color: #bdeec;
+  --metadata-gap: 0;
+  --metadata-padding: 0 0 .24rem 0;
+  --metadata-label-width: max(22.5%, 8rem);
+  --metadata-input-height: calc(var(--metadata-label-font-size) * 2.1);
+}
+
+/* Had here before:  
+.metadata-property[data-property-key="status"] .metadata-input-longtext:not(:empty) {
+    background: inherit; 
+    color: seagreen;
+}
+
+As ariehen writes [here](https://forum.obsidian.md/t/properties-view-css-the-fall-collection/66512), individual properties cannot be styled, at least what he or she knew at the time. */
+
+.theme-dark .metadata-property[data-property-key="status"] {
+    background: #2f4f4f; 
+    color: black;
+}
+
+.metadata-property[data-property-key="aliases"] .multi-select-pill { 
+    background: inherit; 
+    color: #669966;
+}
+
+.metadata-property[data-property-key="tags"] .multi-select-pill { 
+    background: inherit; 
+    color: #669966;
+}
+
+/* reorder properties */
+.metadata-properties > [data-property-key] {
+    order: 999;
+}
+.metadata-properties > [data-property-key="status"] {
+    order: 1;
+}
+
+.metadata-property-key .metadata-property-icon {
+  --icon-color: #bdeec;
+  --icon-size: 1rem;
+}
+
+.metadata-container {
+  border-bottom: dashed .2rem var(--background-modifier-border);
+  margin-bottom: 1.3rem;
+  /* for minimal theme */
+  --input-height: var(--metadata-input-height);
+}

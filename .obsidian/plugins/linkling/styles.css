@@ -1,0 +1,657 @@
+/* Main container - single outer scrollbar for all contexts */
+.linkling-view .search-main-container {
+    padding: 20px;
+    max-width: 800px;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* OUTER SCROLLBAR ONLY */
+}
+
+/* Force outer scrollbar in all contexts */
+.linkling-view,
+.linkling-view .search-main-container {
+    height: 100vh !important;
+    min-height: 0 !important;
+    max-height: 100vh !important;
+    overflow-y: auto !important;
+}
+
+/* In sidebar context, ensure we use full available height */
+.workspace-leaf-content[data-type*="linkling"] .linkling-view .search-main-container {
+    height: 100%;
+    max-height: 100%;
+}
+
+/* Fixed top section - search bar, mode selector, initial controls */
+.linkling-view .search-mode-container,
+.linkling-view .search-bar-container {
+    flex: 0 0 auto; /* Keep these fixed at top */
+    z-index: 1;
+    position: relative;
+}
+
+.linkling-view .search-mode-container {
+    margin-bottom: 8px;
+    padding: 6px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.linkling-view .search-mode-left {
+    flex: 1;
+}
+
+.linkling-view .search-mode-right {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.linkling-view .search-mode-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.linkling-view .search-mode-options {
+    display: flex;
+    gap: 15px;
+}
+
+.linkling-view .search-mode-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.linkling-view .search-mode-radio {
+    margin: 0;
+}
+
+.linkling-view .search-mode-text {
+    font-size: 13px;
+    color: var(--text-normal);
+}
+
+.linkling-view .search-mode-description {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Regex toggle styles */
+.linkling-view .regex-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.linkling-view .regex-toggle {
+    margin: 0;
+}
+
+.linkling-view .regex-label {
+    font-size: 12px;
+    color: var(--text-normal);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.linkling-view .search-bar-container {
+    margin-bottom: 8px;
+}
+
+.linkling-view .search-bar-form {
+    display: flex;
+    gap: 10px;
+}
+
+.linkling-view .search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+/* Outer scrollable wrapper - this provides the main scroll in sidebar */
+.linkling-view .linkling-content-scroll {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow: visible !important; /* NO INNER SCROLLBAR */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Control sections - fixed size within scroll area */
+.linkling-view .tags-row,
+.linkling-view .suggested-tags-row,
+.linkling-view .property-buttons-container {
+    flex: 0 0 auto;
+}
+
+.linkling-view .tags-row {
+    margin-bottom: 6px;
+}
+
+.linkling-view .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.linkling-view .search-tag-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.linkling-view .search-tag-operator-label {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--background-modifier-border);
+    color: var(--text-muted);
+}
+
+.linkling-view .search-tag, .linkling-view .search-tag-text {
+    padding: 2px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 11px;
+    margin: 0;
+}
+
+.linkling-view .search-tag:hover, .linkling-view .search-tag-text:hover {
+    background: var(--background-modifier-hover);
+}
+
+.linkling-view .search-tag-text {
+    background: var(--background-modifier-border);
+    font-style: italic;
+}
+
+.linkling-view .suggested-tags-row {
+    margin-bottom: 6px;
+}
+
+.linkling-view .suggested-tags-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.linkling-view .suggested-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.linkling-view .suggested-filter-input {
+    padding: 2px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 11px;
+}
+
+.linkling-view .suggested-tags-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    width: 100%;
+}
+
+.linkling-view .suggested-tag {
+    padding: 1px 5px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 2px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 10px;
+    margin: 0;
+}
+
+.linkling-view .suggested-tag:hover {
+    background: var(--background-modifier-hover);
+}
+
+.linkling-view .property-buttons-container {
+    margin-bottom: 6px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.linkling-view .property-button {
+    padding: 2px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 11px;
+    margin: 0;
+}
+
+.linkling-view .property-button:hover {
+    background: var(--background-modifier-hover);
+}
+
+.linkling-view .property-button-content {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.linkling-view .property-button-arrow {
+    font-size: 10px;
+}
+
+.linkling-view .refresh-button {
+    padding: 2px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 12px;
+    margin: 0;
+}
+
+.linkling-view .refresh-button:hover {
+    background: var(--background-modifier-hover);
+}
+
+.linkling-view .property-dropdown {
+    position: absolute;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.linkling-view .property-dropdown-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.linkling-view .property-dropdown-item:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* Results container - dual scroll behavior */
+.linkling-view .results-container {
+    margin-top: 20px;
+    flex: 1 1 auto;
+    min-height: 100px;
+    overflow: visible !important; /* NO INNER SCROLLBAR */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Remove ALL context-specific inner scrollbars */
+.modal .linkling-view .results-container,
+.popover .linkling-view .results-container,
+.workspace-leaf-content[data-mode="preview"] .linkling-view .results-container,
+.workspace-leaf-content[data-type*="linkling"] .linkling-view .results-container,
+.workspace-split.mod-left-split .linkling-view .results-container,
+.workspace-split.mod-right-split .linkling-view .results-container,
+.modal .linkling-view .linkling-content-scroll,
+.popover .linkling-view .linkling-content-scroll,
+.workspace-leaf-content[data-mode="preview"] .linkling-view .linkling-content-scroll,
+.workspace-leaf-content[data-type*="linkling"] .linkling-view .linkling-content-scroll,
+.workspace-split.mod-left-split .linkling-view .linkling-content-scroll,
+.workspace-split.mod-right-split .linkling-view .linkling-content-scroll {
+    overflow: visible !important;
+    max-height: none !important;
+}
+
+.linkling-view .search-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    flex: 0 0 auto;
+    /* Ensure header stays visible */
+    position: sticky;
+    top: 0;
+    background: var(--background-primary);
+    z-index: 2;
+}
+
+.linkling-view .search-summary {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.linkling-view .search-sort-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.linkling-view .sort-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.linkling-view .sort-select {
+    padding: 2px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 11px;
+}
+
+.linkling-view .sort-arrow {
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 2px;
+    font-size: 12px;
+}
+
+.linkling-view .sort-arrow:hover {
+    background: var(--background-modifier-hover);
+}
+
+.linkling-view .search-result-file {
+    margin-bottom: 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.linkling-view .file-header-content {
+    padding: 6px 10px;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.linkling-view .file-header-content h4 {
+    margin: 0;
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.linkling-view .file-header-content h4:hover {
+    color: var(--text-accent);
+}
+
+.linkling-view .block-container {
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.linkling-view .block-container:last-child {
+    border-bottom: none;
+}
+
+.linkling-view .block-content-container {
+    padding: 8px;
+}
+
+.linkling-view .block-content {
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.linkling-view .block-link-container {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.linkling-view .block-action {
+    padding: 2px 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-radius: 2px;
+}
+
+.linkling-view .block-action:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+/* BlockID chip — inline after 📋 and 🔗 in the action bar */
+.linkling-view .block-blockid-chip {
+    font-family: var(--font-monospace);
+    font-size: 0.72em;
+    padding: 1px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-left: 4px;
+    vertical-align: middle;
+    line-height: 1.6;
+}
+
+.linkling-view .block-blockid-chip:hover {
+    background: var(--background-modifier-border);
+    color: var(--text-normal);
+    border-color: var(--interactive-accent);
+}
+
+/* Inline blockID chip — appears next to refresh button */
+.linkling-view .search-file-blockid-chip-inline {
+    font-family: var(--font-monospace);
+    font-size: 0.75em;
+    padding: 1px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary-alt);
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1.6;
+    margin-left: 4px;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+}
+
+.linkling-view .search-file-blockid-chip-inline:hover {
+    background: var(--background-modifier-border);
+    color: var(--text-normal);
+    border-color: var(--interactive-accent);
+}
+
+/* Visual tint on search tags that have blockIDs — color/width applied inline via plugin settings */
+.linkling-view .search-tag.search-tag-has-blockids,
+.linkling-view .search-tag-text.search-tag-has-blockids {
+    color: var(--text-accent);
+    background: var(--background-modifier-accent);
+}
+
+.linkling-view .search-tag-has-blockids:hover {
+    border-color: inherit !important; /* keep settings color on hover */
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.linkling-view .linklens-suggestion-container {
+    position: absolute;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 220px;
+    min-height: 40px;
+    overflow-y: auto;
+    display: none;
+    text-transform: none;
+}
+
+.linkling-view .suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    text-transform: none;
+}
+
+.linkling-view .suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.linkling-view .suggestion-item:hover,
+.linkling-view .suggestion-item.selected {
+    background: var(--background-modifier-hover);
+}
+
+/* History item styles */
+.linkling-view .suggestion-item.history-item {
+    background: var(--background-secondary-alt);
+    border-left: 3px solid var(--text-accent);
+}
+
+.linkling-view .suggestion-item.history-item:hover,
+.linkling-view .suggestion-item.history-item.selected {
+    background: var(--background-modifier-hover);
+}
+
+.linkling-view .suggestion-item .history-icon {
+    margin-right: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Pin button styles - outline when unpinned, filled when pinned */
+.linkling-view .suggestion-item .history-pin-btn {
+    cursor: pointer;
+    margin-right: 6px;
+    font-size: 12px;
+    opacity: 1;
+}
+
+.linkling-view .suggestion-item .history-pin-btn.history-pin-btn--unpinned {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+.linkling-view .suggestion-item .history-pin-btn:hover {
+    opacity: 1;
+    filter: none;
+}
+
+.linkling-view .suggestion-item.pinned-history-item .history-pin-btn {
+    opacity: 1;
+    filter: none;
+}
+
+.linkling-view .suggestion-item .suggestion-text {
+    flex: 1;
+}
+
+.linkling-view .or-operator-warning {
+    position: absolute;
+    background: var(--background-secondary);
+    border: 1px solid var(--text-error);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-error);
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.linkling-view .block-highlight {
+    background: var(--text-highlight-bg);
+    color: var(--text-normal);
+}
+
+/* Results filter highlight styles */
+.results-filter-highlight {
+    background-color: var(--text-highlight-bg);
+    color: var(--text-normal);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+/* Settings helper/info block */
+.linklens-settings-helper {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    background: var(--background-secondary);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+/* Fallback for when specific selectors don't match */
+.workspace-split.mod-left-split .linkling-view .search-main-container,
+.workspace-split.mod-right-split .linkling-view .search-main-container {
+    height: 100%;
+    max-height: 100%;
+}
+
+/* Flash animation for suggested-tag buttons that share a block with a blockID */
+/* Uses --flash-block-id-color CSS custom property set via JavaScript from user settings */
+.linkling-view .suggested-tag.has-blockid-flash {
+  animation: linklingBlockIdFlash 1s ease-in-out infinite;
+}
+
+@keyframes linklingBlockIdFlash {
+  0%, 100% { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--flash-block-id-color, #ffa500) 40%, transparent); }
+  50%       { box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--flash-block-id-color, #ffa500) 90%, transparent); }
+}
+
+/* Long-press visual feedback — button dims during hold */
+.linkling-view .suggested-tag:active {
+  opacity: 0.6;
+  transition: opacity 0.1s;
+}
+
+/* FFC mode — file tag chip (distinct from regular backlink tag) */
+.linkling-view .search-tag.ffc-file-tag {
+  border-color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-secondary));
+  color: var(--text-accent);
+  font-style: normal;
+}
+
+.linkling-view .search-tag.ffc-file-tag:hover {
+  background: color-mix(in srgb, var(--interactive-accent) 22%, var(--background-modifier-hover));
+}
+
+/* FFC vault-wide filter results — shown while typing in "Related file: Filter" */
+.linkling-view .ffc-filter-results {
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 4px;
+  background: var(--background-primary-alt);
+}
+
+.linkling-view .search-tag.ffc-any-file-tag {
+  font-style: italic;
+  opacity: 0.85;
+}

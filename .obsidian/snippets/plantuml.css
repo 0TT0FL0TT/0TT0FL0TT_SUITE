@@ -1,0 +1,14 @@
+/* Other plantUML CSS related to colors was in the Autoadaptive_images file */
+
+/* Target PNG images generated online */
+img[src^="https://www.plantuml.com/plantuml/png"] { /* For local java generated diagrams, this will not be good but I'm always using svg's anyway. */
+    max-width: 100%; /* Ensure that the image will not exceed the width of its container*/
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* For SVG images (for local as opposed to published Obsidian, svg must be targeted separately) */
+.block-language-plantuml-svg svg {
+    max-width: 100%; /* Ensure that the image will not exceed the width of its container*/
+    height: auto; /* Maintain aspect ratio */
+}
+

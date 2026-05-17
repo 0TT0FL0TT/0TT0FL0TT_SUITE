@@ -1,0 +1,48 @@
+/* PlantUML rendered png images for dark mode */
+.theme-dark img[src^="https://www.plantuml.com/plantuml/png"] {
+  filter: invert(92.66%) sepia(73.54%);
+  mix-blend-mode: screen;
+}
+
+/*Excalidraw and technical limitations:
+
+For Excalidraw embeds, you can only apply a universal filter in dark mode 
+using class-based selectors. Selective adaptation is not possible without 
+file renaming or plugin support.
+
+And no need to write in `|invert_dark` as alias for Excalidraw files because
+that part we cannot target with alt or src.
+Also no need or way to add theme-light then, either.  
+Make all your compositions on light canvas with dark strokes that looks good
+on light theme and when we switch themes, the Excalidraw files will be inverted.
+*/
+
+/* In a new version I made it local only, so now you need to add 'invert_for_excalidraw' as value to cssclasses prop */
+
+/* Live Preview */
+.theme-dark .invert_for_excalidraw img.excalidraw-embedded-img {
+  filter: invert(92.66%) sepia(73.54%);
+  mix-blend-mode: screen;
+}
+.theme-dark .invert_for_excalidraw img.excalidraw-svg.excalidraw-embedded-img.excalidraw-canvas-immersive {
+  filter: invert(92.66%) sepia(73.54%);
+  mix-blend-mode: screen;
+}
+
+/* Reading Mode - descendant selector from body or view container */
+.theme-dark body:has(.invert_for_excalidraw) img.excalidraw-embedded-img,
+.theme-dark .view-content:has(.invert_for_excalidraw) img.excalidraw-embedded-img {
+  filter: invert(92.66%) sepia(73.54%);
+  mix-blend-mode: screen;
+}
+.theme-dark body:has(.invert_for_excalidraw) img.excalidraw-svg.excalidraw-embedded-img.excalidraw-canvas-immersive,
+.theme-dark .view-content:has(.invert_for_excalidraw) img.excalidraw-svg.excalidraw-embedded-img.excalidraw-canvas-immersive {
+  filter: invert(92.66%) sepia(73.54%);
+  mix-blend-mode: screen;
+}
+
+/* PlantUML rendered svg images for dark mode -- Obsidianban ezt külön kellett, mert online az előző megoldás kellett svg-re is. */
+.theme-dark .block-language-plantuml-svg svg {
+  filter: invert(92.66%) sepia(73.54%);
+  mix-blend-mode: screen;
+}

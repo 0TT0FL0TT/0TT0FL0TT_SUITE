@@ -1,0 +1,51 @@
+{
+  "pattern": "> \\[\\!.+?\\]",
+  "replacement": "",
+  "flags": "",
+  "onlySelection": false,
+  "replaceAll": false,
+  "presets": [
+    {
+      "name": "&gt;&gt; DELETER",
+      "pattern": "&gt;&gt; ",
+      "replacement": "",
+      "flags": "gm",
+      "onlySelection": false,
+      "replaceAll": true
+    },
+    {
+      "name": "Wikilinks Remover",
+      "pattern": "\\[\\[(.*?)\\]\\]",
+      "replacement": "$1",
+      "flags": "gm",
+      "onlySelection": false,
+      "replaceAll": true
+    },
+    {
+      "name": "Remove Empty Lines",
+      "pattern": "\\n\\n",
+      "replacement": "\\n",
+      "flags": "gm",
+      "onlySelection": true,
+      "replaceAll": true
+    },
+    {
+      "name": "Callouts in activeFile",
+      "pattern": "> \\[\\!.+?\\]",
+      "replacement": "",
+      "flags": "",
+      "onlySelection": false,
+      "replaceAll": false
+    },
+    {
+      "name": "BlockID search",
+      "pattern": "(\\^[0-9a-z]{6}$)|(\\^[0-9a-zA-ZÀ-ŰØ-áàäæãééíóöőüűčžñßðđŋħjĸłß-]{3,25}$)",
+      "replacement": "",
+      "flags": "gm",
+      "onlySelection": false,
+      "replaceAll": false
+    }
+  ],
+  "autoPreview": true,
+  "currentPresetName": "Callouts in activeFile"
+}

@@ -1,0 +1,104 @@
+{
+  "maxHistoryItems": 100,
+  "maxPinnedHistoryItems": 30,
+  "excludedFolders": "99 SYSTEM, _Guides_of_plugins",
+  "resultLimit": 2000,
+  "batchSize": 500,
+  "mobileResultLimit": 200,
+  "mobileBatchSize": 50,
+  "mobileMainModalScale": 0.83,
+  "mobilePreviewModalScale": 1,
+  "desktopModalScale": 1.0,
+  "maxOpenResultsWithoutConfirm": 10,
+  "maxCopyFilesWithoutConfirm": 500,
+  "debug": false,
+  "suppressMessages": false,
+  "filterableProperties": [
+    {
+      "field": "collection",
+      "type": "list"
+    },
+    {
+      "field": "tags",
+      "type": "list"
+    },
+    {
+      "field": "status",
+      "type": "text"
+    },
+    {
+      "field": "mtime",
+      "type": "datetime"
+    },
+    {
+      "field": "ctime",
+      "type": "datetime"
+    },
+    {
+      "field": "date_modified",
+      "type": "datetime"
+    },
+    {
+      "field": "date_created",
+      "type": "datetime"
+    }
+  ],
+  "sortableProperties": [
+    {
+      "field": "basename",
+      "type": "text"
+    },
+    {
+      "field": "mtime",
+      "type": "text"
+    },
+    {
+      "field": "ctime",
+      "type": "date"
+    },
+    {
+      "field": "date_modified",
+      "type": "date"
+    },
+    {
+      "field": "date_created",
+      "type": "date"
+    }
+  ],
+  "dateFrontmatterKey": "date_modified",
+  "dateFormat": "YYYY-MM-DDTHH:mm",
+  "filterDateReplacer": false,
+  "dateUpdateConditions": [],
+  "aiProvider": "gemini",
+  "aiGeminiModel": "gemini-2.5-flash-lite",
+  "aiGeminiModel2": "gemini-2.5-flash-lite",
+  "aiOpenRouterModel": "nvidia/nemotron-nano-12b-v2-vl:free",
+  "aiOpenaiBaseUrl": "https://api.openai.com/v1",
+  "aiOpenaiModel": "gpt-4o-mini",
+  "aiAnthropicBaseUrl": "https://api.anthropic.com",
+  "aiAnthropicModel": "claude-3-5-haiku-20241022",
+  "aiGroqModel": "openai/gpt-oss-120b",
+  "aiOllamaBaseUrl": "http://127.0.0.1:11434/v1",
+  "aiOllamaModel": "llama3.2",
+  "aiNvidiaBaseUrl": "https://integrate.api.nvidia.com/v1",
+  "aiNvidiaModel": "deepseek-ai/deepseek-v3.2",
+  "aiTimeoutMs": 12000,
+  "aiMaxTokens": 4096,
+  "aiSmartCueWord": "smart",
+  "aiConceptCueWord": "concept",
+  "aiPromptVocabVariant": "",
+  "aiPromptSmart": "",
+  "aiPromptSemantic": "",
+  "aiSmartModeName": "Smart Search",
+  "aiConceptModeName": "Concept Search",
+  "aiTemporalDateSource": "frontmatter",
+  "localeOverride": "hu",
+  "filterHighlightColor": "rgba(179, 92, 127, 0.7)",
+  "aiGeminiApiKey": "",
+  "aiOpenRouterApiKey": "",
+  "aiOpenaiApiKey": "",
+  "aiAnthropicApiKey": "",
+  "aiGroqApiKey": "",
+  "aiOllamaApiKey": "",
+  "aiPromptRegex": ""
+}

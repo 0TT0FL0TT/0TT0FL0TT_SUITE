@@ -1,0 +1,86 @@
+{
+  "footnote-navigator:open-footnote-navigator": [
+    {
+      "modifiers": [
+        "Alt",
+        "Mod"
+      ],
+      "key": "F"
+    }
+  ],
+  "global-search-or-replace:global-search-or-replace": [
+    {
+      "modifiers": [
+        "Mod",
+        "Meta",
+        "Shift"
+      ],
+      "key": ","
+    }
+  ],
+  "fix-require-modules:invokeScriptFile-Alias-it.ts": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "A"
+    }
+  ],
+  "fix-require-modules:invokeScriptFile-Calloutify.ts": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "C"
+    }
+  ],
+  "fix-require-modules:invokeScriptFile-Paste-Link-from-Clipboard-With-Title.ts": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "K"
+    }
+  ],
+  "fix-require-modules:invokeScriptFile-Reload-page.ts": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "R"
+    }
+  ],
+  "fix-require-modules:invokeScriptFile-Website-Search-with-User-Input-for-Selection-or-Note-Title.ts": [
+    {
+      "modifiers": [
+        "Alt",
+        "Meta"
+      ],
+      "key": "I"
+    }
+  ],
+  "block-collections:block-id-creator-and-link-copier": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "B"
+    }
+  ],
+  "global-search:open": [],
+  "workspace:close-window": [],
+  "fix-require-modules:invokeScriptFile-Search-Globally.ts": [
+    {
+      "modifiers": [
+        "Mod",
+        "Shift"
+      ],
+      "key": "F"
+    }
+  ]
+}

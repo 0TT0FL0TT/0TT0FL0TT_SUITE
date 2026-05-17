@@ -1,0 +1,11 @@
+/*- source view and live preview - mobile only -*/
+.is-mobile .markdown-source-view.mod-cm6 .cm-line { 
+  text-align: justify;
+  text-justify: inter-word; 
+}
+
+/*- source view and live preview - mobile and desktop -*/
+.is-mobile, .markdown-source-view.mod-cm6 .cm-line { 
+  text-align: justify;
+  text-justify: inter-word; 
+}

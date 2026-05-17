@@ -1,0 +1,9 @@
+/* Source: https://forum.obsidian.md/t/bases-hide-toolbar-after-updating-to-obsidian-1-10-3/107901/2 */
+/* Must add |no-toolbar to the wikilink when embedding base */
+
+:is(
+	.bases-no-toolbar,
+	.bases-embed[alt~="no-toolbar"]
+) .bases-toolbar-item {
+	display: none;
+}

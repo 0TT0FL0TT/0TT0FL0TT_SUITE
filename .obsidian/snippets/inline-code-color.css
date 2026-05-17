@@ -1,0 +1,20 @@
+/* Dark mode */
+.theme-dark .markdown-preview-view code,
+.theme-dark .cm-s-obsidian span.cm-inline-code {
+    background: inherit;
+    color: indianred;
+    font-weight: 600;
+}
+
+/* Light mode */
+.theme-light .markdown-preview-view code,
+.theme-light .cm-s-obsidian span.cm-inline-code {
+    background: inherit;
+    color: indianred;
+    font-weight: 600;
+}
+
+/* Callout-okban is inherit legyen */
+.cm-html-embed.cm-embed-block pre code, .cm-s-obsidian .cm-inline-code:not(.cm-formatting), .cm-s-obsidian code:not(pre code), .markdown-rendered code:not(pre code) {
+    background: inherit;
+}

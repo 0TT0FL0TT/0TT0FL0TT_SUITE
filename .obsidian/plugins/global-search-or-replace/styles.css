@@ -1,0 +1,211 @@
+/* Global Search Or Replace Plugin Styles */
+
+/* Match element styles */
+.regex-preview-match {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    background: var(--background-primary);
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.regex-preview-match:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* File path styling */
+.regex-file-path {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Markdown preview container */
+.regex-preview-markdown {
+    font-size: 0.95em;
+    line-height: 1.5;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Highlight spans */
+.regex-preview-markdown span[style*="background-color"] {
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+/* Filter highlight color - customizable via settings */
+.regex-preview-markdown .filter-highlight {
+    background-color: var(--gsr-filter-highlight, rgba(255, 249, 196, 0.7));
+}
+
+/* Button row in match elements */
+.regex-preview-match .button-row {
+    display: flex;
+    gap: 0.5em;
+    margin-top: 0.3em;
+    flex-wrap: wrap;
+}
+
+/* Fix for code blocks in rendered markdown - force text wrapping */
+.regex-preview-match pre,
+.regex-preview-match code,
+.regex-preview-content pre,
+.regex-preview-content code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100%;
+}
+
+/* Fix for copy button overflow in match elements */
+.regex-preview-match button {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure icon buttons don't overflow */
+.regex-preview-match button svg,
+.regex-preview-match button .svg-icon {
+    max-width: 16px;
+    max-height: 16px;
+    flex-shrink: 0;
+}
+
+/* Fix for any absolutely positioned copy buttons */
+.regex-preview-match {
+    position: relative;
+    overflow: visible;
+}
+
+.regex-preview-match .copy-button,
+.regex-preview-match [class*="copy"] {
+    position: relative;
+    z-index: 10;
+}
+
+/* Hide icons inside buttons that have text content (preserve the text buttons) */
+.regex-preview-match button svg,
+.regex-preview-match button .svg-icon,
+.regex-preview-match button img {
+    display: none !important;
+}
+
+/* Also hide any button that contains only an icon (no text) */
+/* NOTE: Temporarily disabled to show Copy/Link/Embed buttons
+.regex-preview-match button:empty,
+.regex-preview-match button:not(:has(*)),
+.regex-preview-match button[class*="copy"]:not(:has(> *:not(svg):not(img))) {
+    display: none !important;
+}
+*/
+
+/* Hide the standalone copy icon that appears in markdown preview (two overlapping rectangles) */
+.regex-preview-match .markdown-rendered .copy-code-button,
+.regex-preview-match .copy-code-button,
+.regex-preview-match button.copy-code-button,
+.regex-preview-match .markdown-rendered button[aria-label="Copy"],
+.regex-preview-match .markdown-preview button[aria-label="Copy"] {
+    display: none !important;
+}
+
+/* Note: Panel positioning, sizing, shadows, and backgrounds are handled by JavaScript */
+
+/* =====================================================
+   RESPONSIVE SETTINGS UI
+   ===================================================== */
+
+/* Responsive Settings UI - tablets and smaller screens */
+@media (max-width: 1024px) {
+    .gsr-responsive-setting .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+        padding: 0.75em 0;
+    }
+    .gsr-responsive-setting .setting-item-info {
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+    }
+    .gsr-responsive-setting .setting-item-control {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .gsr-responsive-setting .setting-item-control input[type="text"],
+    .gsr-responsive-setting .setting-item-control input[type="number"] {
+        width: 100%;
+        max-width: 300px;
+    }
+    .gsr-responsive-setting .setting-item-control .slider {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Mobile portrait - even more compact */
+@media (max-width: 768px) {
+    .gsr-responsive-setting .setting-item-name {
+        font-size: 0.95em;
+    }
+    .gsr-responsive-setting .setting-item-description {
+        font-size: 0.85em;
+        line-height: 1.3;
+    }
+}
+
+/* =====================================================
+   OBSIDIAN 1.12+ BUTTON FIX
+   Prevents mod-cta buttons from being stretched full-width
+   ===================================================== */
+
+/* Fix for ResultsFloatingPanel buttons */
+.results-floating-panel button.mod-cta,
+.results-floating-panel button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.results-floating-panel button svg,
+.results-floating-panel button .svg-icon,
+.results-floating-panel button img {
+    max-width: 16px !important;
+    max-height: 16px !important;
+    flex-shrink: 0;
+}
+
+/* Fix for modal buttons in our plugin */
+.modal .setting-item-control button.mod-cta,
+.modal .setting-item-control button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+}
+
+/* Fix for PreviewFloatingPanel action bar buttons */
+.regex-action-bar button.mod-cta,
+.regex-action-bar button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+}
+
+/* Ensure button rows don't stretch buttons */
+.results-floating-panel .button-row,
+.regex-preview-match .button-row {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+}
+
+.regex-preview-match .button-row button {
+    width: auto !important;
+    flex: 0 0 auto !important;
+}

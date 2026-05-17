@@ -1,0 +1,22 @@
+/* https://forum.obsidian.md/t/canvas-is-possible-to-increase-the-text-font-size-of-a-card/50146/10 */
+
+.canvas-node-container .markdown-rendered h1 {
+  font-size: 43px;
+}
+
+.canvas-node-container .markdown-rendered h2 {
+  font-size: 40px;
+}
+
+.canvas-node-container p {
+  font-size: 38px;
+}
+
+.canvas-node-container li {
+  font-size: 38px;
+}
+
+/* Editing mode inside canvas nodes */
+.mod-inside-iframe > .cm-editor > .cm-scroller {
+  font-size: 38px;
+}

@@ -1,0 +1,28 @@
+{
+  "excludedFolders": [
+    "99 SYSTEM",
+    "_Guides_of_plugins"
+  ],
+  "showAttachments": false,
+  "propertyFilterKeys": [
+    "tags",
+    "status",
+    "collection"
+  ],
+  "relatedLinksSort": "basename",
+  "relatedLinksLimit": "ALL",
+  "resultsLimit": "ALL",
+  "createdDateProperty": "date_created",
+  "lastEditedDateProperty": "date_modified",
+  "enableSearchHistory": true,
+  "searchHistory": [
+    "Ószöv"
+  ],
+  "pinnedHistory": [],
+  "maxSearchHistoryLimit": 100,
+  "regexMode": true,
+  "blockIdHighlightColor": "#e03131",
+  "blockIdHighlightBorderWidth": 2,
+  "flashBlockIdEnabled": true,
+  "flashBlockIdColor": "#ffa500"
+}

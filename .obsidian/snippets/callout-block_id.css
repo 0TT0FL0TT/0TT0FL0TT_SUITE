@@ -1,0 +1,27 @@
+/* ============================================================
+   Obsidian Callout: _for_blockid
+   Purpose: Renders the callout as transparent/invisible chrome
+   so it acts as a pure block-ID anchor with no visual styling.
+   Usage:  > [!_for_blockid]
+   ============================================================ */
+
+.callout:is([data-callout="_for_blockid"]) {
+  /* Remove background & border */
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  /* Collapse built-in spacing */
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Hide the entire header row (icon + title) */
+.callout:is([data-callout="_for_blockid"]) .callout-title {
+  display: none !important;
+}
+
+/* Just in case the icon is targeted separately */
+.callout:is([data-callout="_for_blockid"]) .callout-icon {
+  display: none !important;
+}

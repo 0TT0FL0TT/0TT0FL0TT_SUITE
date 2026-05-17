@@ -1,0 +1,24 @@
+{
+  "baseFontSize": 18,
+  "theme": "system",
+  "enabledCssSnippets": [
+    "Bases-Hide-Toolbar",
+    "callout-block_id",
+    "HoverWidth",
+    "plantuml",
+    "Properties CSS hack by Jorgemrtr",
+    "Properties-hide",
+    "textalign-and-paragraph-spacing",
+    "HeadingsSorted",
+    "inline-code-color",
+    "ITS - Image Adjustments by SIRvb-custom",
+    "pinned-tab-shrink",
+    "Autoadaptive_images_for_dark_and_light_mode",
+    "callouts-justify-text-and-hide-scrollbar",
+    "default-theme-greenify",
+    "_Attempting_to_fix_Obs_ver_1.12_button_and_input_bar_width_issues",
+    "callouts-to-hungarian"
+  ],
+  "accentColor": "#7cbb83",
+  "cssTheme": ""
+}

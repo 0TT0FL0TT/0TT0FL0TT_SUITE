@@ -1,0 +1,14 @@
+{
+  "canvasRelativePath": "_Canvas_file-ok/Collections.canvas",
+  "foldersToExclude": [
+    "SYSTEM",
+    "DAILY",
+    "assets",
+    "templates"
+  ],
+  "showPlantUML": false,
+  "plantUMLFrontmatterKey": "plantuml_nodes",
+  "zoteroAuthorTitleKey": "zotero_author-title",
+  "zoteroItemIdKey": "zotero_itemid",
+  "parseSpacesAsTerms": true
+}
