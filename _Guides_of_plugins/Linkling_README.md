@@ -73,7 +73,7 @@ Full-text search across the entire vault.
 
 - Enable **Regex Mode** (toggle on the right) to treat search terms as regular expressions
 - Regex mode is saved across sessions
-- Supports the same AND / OR / NOT operators as BC mode
+- Supports the same AND / OR / NOT operators as BC mode and will work in the context of BC mode, not FFC mode!
 - Search history is saved and accessible via the suggestion dropdown (see [Search History](#search-history))
 - Compared to GSR plugin (which works with sensitive searches), Linkling Text search is insensitive, so a search for `Izsák` will yield results for `kizsákmányolás` as well.
 
