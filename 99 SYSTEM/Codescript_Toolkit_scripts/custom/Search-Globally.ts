@@ -105,17 +105,15 @@ class FormattingOptionsModal extends obsidian.Modal {
 	}
 }
 
-
-
 // Reading módban a DOM selection a rendered plain szöveget adja vissza.
 // Wikilink alias/target és inline code raw visszaállítása nem megbízható
 // DOM selection-ből — ha raw markdownt akarsz keresni, Source vagy
 // Live Preview módban jelölj ki.
 function getSelectedTextSync(app: obsidian.App): { text: string } {
-	// ── Source / Live Preview mód ────────────────────────────────────────
-	const mdView = app.workspace.getActiveViewOfType(obsidian.MarkdownView);
-	if (mdView?.editor) {
-		const sel = mdView.editor.getSelection().trim();
+	// ── Active editor (works in both MarkdownView AND Canvas card editors) ──
+	const activeEditor = app.workspace.activeEditor;
+	if (activeEditor?.editor) {
+		const sel = activeEditor.editor.getSelection().trim();
 		if (sel) return { text: sel };
 	}
 
@@ -192,8 +190,8 @@ function escapeRegex(text: string): string {
 export default class SearchGloballyPlugin extends obsidian.Plugin {
 	async onload() {
 		this.addCommand({
-			id: 'search-globally-zanodor',
-			name: 'Search Globally (custom)',
+			id: 'search-globally',
+			name: 'Search Globally',
 			callback: () => searchGlobally(this.app)
 		});
 	}
