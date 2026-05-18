@@ -75,6 +75,7 @@ Full-text search across the entire vault.
 - Regex mode is saved across sessions
 - Supports the same AND / OR / NOT operators as BC mode
 - Search history is saved and accessible via the suggestion dropdown (see [Search History](#search-history))
+- Compared to GSR plugin (which works with sensitive searches), Linkling Text search is insensitive, so a search for `Izsák` will yield results for `kizsákmányolás` as well.
 
 ### Frontmatter Property Filtering
 
