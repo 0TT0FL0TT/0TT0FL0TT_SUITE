@@ -30,7 +30,7 @@
   height: 0;
   transform: scaleY(0);
 }
-.setting-item > .setting-item-control input[type=text] {
+.advanced-canvas-settings-container .setting-item > .setting-item-control input[type=text] {
   width: 75px;
 }
 details.setting-item {
