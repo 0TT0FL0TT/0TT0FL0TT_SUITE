@@ -402,8 +402,7 @@ class RegexReplaceView extends ItemView {
 			.replace(/\\n/g, '\n')
 			.replace(/\\r/g, '\r')
 			.replace(/\\t/g, '\t')
-			.replace(/\\0/g, '\0')
-			.replace(/\\\\/g, '\\'); // Must be last to handle escaped backslashes
+			.replace(/\\0/g, '\0');
 	}
 
 	executeReplace(editor = null) {
