@@ -4,7 +4,7 @@ A practical reference for every script in the toolkit. Each entry covers what pr
 
 ---
 
-## Custom Commands
+# Custom Commands
 
 ---
 
@@ -132,7 +132,29 @@ The list is defined in the source file and can be extended with any site that ac
 
 ---
 
-## Startup Scripts
+## Remove Formatting
+
+**What it does:** Strips the selected text of its Markdown formatting in one keystroke — wikilinks, bold, italic, quotes, highlights, and `[label](url)` links all collapse down to their plain readable content.
+
+**The Obsidian friction it removes:** Pasting or repurposing formatted text often leaves behind syntax noise. Removing it by hand — hunting for `**`, `==`, or the tail end of a long Wikipedia URL buried in `[...](...(...)...)` — is fiddly and error-prone, especially when parentheses nest inside the URL itself.
+
+**How it works:**
+
+- **`[label](url)` selected** → strips the URL and parentheses, leaving just the label. Uses a paren-counting parser rather than a regex, so it correctly handles nested parentheses common in Wikipedia URLs like `Foo_(disambiguation)`.
+- **`[[Note|alias]]` selected** → returns the alias only.
+- **`[[Note]]` selected** → returns the note name only.
+- **`*italic*` or `**bold**` selected** → returns the inner text.
+- **Quoted text selected** → strips the surrounding quote characters (handles curly quotes, guillemets, and other typographic variants).
+- **`==highlight==` selected** → returns the highlighted text.
+- **Multiple formatted spans on one line** → all are stripped in a single pass.
+
+Each transformation also updates `date_modified` in the active note's frontmatter.
+
+**Tip:** The command applies the first matching transformation it detects, so if your selection mixes formatting types, trigger it once per type or select the most specific span first.
+
+---
+
+# Startup Scripts
 
 These run automatically when Obsidian loads (via `main.ts`) and stay active for the session. They don't add commands — they patch or extend Obsidian's behaviour globally.
 
