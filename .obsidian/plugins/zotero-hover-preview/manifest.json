@@ -1,0 +1,11 @@
+{
+  "id": "zotero-hover-preview",
+  "name": "Zotero Hover Preview",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Hover over zotero:// links to preview the PDF page inline. No network or Zotero API required.",
+  "author": "Otto Flott",
+  "authorUrl": "https://github.com/0TT0FL0TT",
+  "fundingUrl": "",
+  "isDesktopOnly": true
+}

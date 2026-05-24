@@ -1,7 +1,7 @@
 import { App, Plugin } from 'obsidian';
 
 const gotoFirstLine = async (app: App): Promise<void> => {
-    const editor = app.workspace.activeLeaf?.view?.editor;
+    const editor = app.workspace.activeEditor?.editor;
     if (!editor) return;
     
     editor.setCursor({line: 1, ch: 0});

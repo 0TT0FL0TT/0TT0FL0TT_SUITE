@@ -6,17 +6,19 @@ const patterns = {
     deitalicize: /(\*{1})(.*?)(\*{1})/gm,
     debold: /(\*{2})(.*?)(\*{2})/gm,
     dequote: /("|"|''|,,|„|''|''|"|'|`)(.*?)("|"|''|,,|''|''|"|'|`)/gm,
-    highlights: /(==)(.*?)(==)/gm
+    highlights: /(==)(.*?)(==)/gm,
+    mdlinkStart: /\[([^\]]*)\]\(/g   // matches [label]( — then we count parens manually
 };
 
-const mdLinkPattern = /\[[^\]]*\]\(/;
-
+// Removes [label](url) → label, handling nested parens in URLs
 const stripMarkdownLinks = (text: string): string => {
     let result = '';
     let i = 0;
 
     while (i < text.length) {
+        // Look for [
         if (text[i] === '[') {
+            // Find the closing ] of the label
             let j = i + 1;
             let bracketDepth = 1;
             while (j < text.length && bracketDepth > 0) {
@@ -24,8 +26,11 @@ const stripMarkdownLinks = (text: string): string => {
                 else if (text[j] === ']') bracketDepth--;
                 j++;
             }
+            // j now points to the char after ]
+            // Check if followed by (
             if (j < text.length && text[j] === '(') {
-                const label = text.slice(i + 1, j - 1);
+                const label = text.slice(i + 1, j - 1); // content between [ and ]
+                // Count parens to find the end of the URL
                 let k = j + 1;
                 let parenDepth = 1;
                 while (k < text.length && parenDepth > 0) {
@@ -33,9 +38,11 @@ const stripMarkdownLinks = (text: string): string => {
                     else if (text[k] === ')') parenDepth--;
                     k++;
                 }
+                // k now points to the char after the closing )
                 result += label;
                 i = k;
             } else {
+                // Not a markdown link, emit the [ and continue
                 result += text[i];
                 i++;
             }
@@ -51,7 +58,7 @@ const stripMarkdownLinks = (text: string): string => {
 const transformText = (selection: string): string => {
     let tR = selection;
 
-    if (mdLinkPattern.test(tR)) {
+    if (mdLinkPattern.test(tR)) {                          // ← new, checked first
         tR = stripMarkdownLinks(tR);
     } else if (patterns.wikilinkswithalias.test(tR)) {
         tR = tR.replace(patterns.wikilinkswithalias, '$4');
@@ -70,14 +77,26 @@ const transformText = (selection: string): string => {
     return tR;
 };
 
-const removeFormatting = (app: obsidian.App): void => {
-    const editor = app.workspace.activeLeaf?.view?.editor;
+// Detect presence of a markdown link [...](...) without consuming input
+const mdLinkPattern = /\[[^\]]*\]\(/;
+
+const removeFormatting = async (app: obsidian.App): Promise<void> => {
+    const editor = app.workspace.activeEditor?.editor;
     if (!editor) return;
 
     const selection = editor.getSelection();
     if (!selection) return;
 
-    editor.replaceSelection(transformText(selection));
+    const transformedText = transformText(selection);
+    editor.replaceSelection(transformedText);
+
+    const file = app.workspace.getActiveFile();
+    if (file) {
+        await new Promise(resolve => setTimeout(resolve, 2200));
+        await app.fileManager.processFrontMatter(file, frontmatter => {
+            frontmatter['date_modified'] = moment().format('YYYY-MM-DDTHH:mm');
+        });
+    }
 };
 
 export class RemoveFormattingPlugin extends obsidian.Plugin {
@@ -91,5 +110,5 @@ export class RemoveFormattingPlugin extends obsidian.Plugin {
 }
 
 export async function invoke(app: obsidian.App): Promise<void> {
-    removeFormatting(app);
+    return removeFormatting(app);
 }

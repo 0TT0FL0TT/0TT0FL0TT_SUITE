@@ -39,7 +39,7 @@ class LineNumberModal extends obsidian.Modal {
 }
 
 const goToLine = async (app: obsidian.App): Promise<void> => {
-    const editor = app.workspace.activeLeaf?.view?.editor;
+    const editor = app.workspace.activeEditor?.editor;
     if (!editor) return;
 
     const lineNumber = await new Promise<string>(resolve => {

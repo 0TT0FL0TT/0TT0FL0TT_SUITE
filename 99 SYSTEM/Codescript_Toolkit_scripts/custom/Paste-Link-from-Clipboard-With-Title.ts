@@ -2,7 +2,7 @@ import * as obsidian from 'obsidian';
 
 const pasteMyLink = async (app: obsidian.App): Promise<void> => {
 
-    const editor = app.workspace.activeLeaf?.view?.editor;
+    const editor = app.workspace.activeEditor?.editor;
     if (!editor) return;
 
     const isValidUrl = (urlString: string): boolean => {

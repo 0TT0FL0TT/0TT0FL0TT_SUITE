@@ -221,7 +221,7 @@ const websiteSearch = async (app: obsidian.App): Promise<void> => {
     let searchTerm: string;
 
     const currentFile = app.workspace.getActiveFile();
-    const editor = app.workspace.activeLeaf?.view?.editor;
+    const editor = app.workspace.activeEditor?.editor;
 
     if (currentFile && editor) {
         const selection = editor.getSelection();

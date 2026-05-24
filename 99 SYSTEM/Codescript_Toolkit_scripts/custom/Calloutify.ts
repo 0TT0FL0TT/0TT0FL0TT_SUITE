@@ -174,7 +174,8 @@ class InputModal extends obsidian.Modal {
 }
 
 const insertCallout = async (app: obsidian.App): Promise<void> => {
-    const editor = app.workspace.activeLeaf?.view?.editor;
+    const activeEditor = app.workspace.activeEditor;
+    const editor = activeEditor?.editor;
     if (!editor) return;
 
     // Get current selection

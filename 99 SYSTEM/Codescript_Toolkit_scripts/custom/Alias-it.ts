@@ -353,9 +353,8 @@ const getMultipleEntriesHeadings = (app: App, file: TFile): string[] => {
  * due to how Obsidian handles click events.  
  */
 const aliasIt = async (app: App): Promise<void> => {
-    const view = app.workspace.activeLeaf?.view;
-    if (!(view instanceof MarkdownView)) return;
-    const editor = view.editor;
+    const activeEditor = app.workspace.activeEditor;
+    const editor = activeEditor?.editor;
     if (!editor) return;
 
     // Prevent click events for 300ms
