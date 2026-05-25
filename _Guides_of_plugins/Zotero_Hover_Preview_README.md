@@ -40,6 +40,7 @@ zotero://open-pdf/library/items/MXSKPH4C?page=10
 
 * `Zotero storage path`
   * Custom storage directory - use this if plugin cannot guess your storage folder
+	* The custom path will not break the storage guesser on other platforms, so plugin should work on multiple platforms at the same time even if you set custom path
 * `Popup width`
   * Controls popup size
 * `Hover delay`
