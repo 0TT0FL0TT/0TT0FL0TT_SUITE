@@ -293,7 +293,9 @@ const handleAliasAddition = async (app: App, editor: any): Promise<void> => {
     // Validate cursor is within link boundaries
     if (!isWithinLink(cursor, link.position)) return;
 
-    const targetFile = app.metadataCache.getFirstLinkpathDest(link.link, '');
+    // Strip heading/block anchor (e.g. "Józsué#Józsué ládája" → "Józsué")
+    const filePart = link.link.split('#')[0];
+    const targetFile = app.metadataCache.getFirstLinkpathDest(filePart, '');
     if (!targetFile) return;
 
     const cache = app.metadataCache.getFileCache(targetFile);
@@ -378,7 +380,9 @@ const aliasIt = async (app: App): Promise<void> => {
                 return;
             } else {
                 // Selection is a wikilink without alias: expand to lowercase alias
-                editor.replaceRange(`[[${link}|${link.toLowerCase()}]]`, 
+                // Strip heading/block anchor for the display text
+                const filePart = link.split('#')[0];
+                editor.replaceRange(`[[${link}|${filePart.toLowerCase()}]]`, 
                     editor.getCursor('from'), 
                     editor.getCursor('to')
                 );
