@@ -1,0 +1,11 @@
+{
+  "id": "workspace-revealer",
+  "name": "Workspace Revealer",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Shows a sticky notice when you open a markdown file that belongs to the main tab group of one or more saved workspaces.",
+  "author": "Otto Flott",
+  "authorUrl": "https://github.com/0TT0FL0TT",
+  "fundingUrl": "",
+  "isDesktopOnly": false
+}
