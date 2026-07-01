@@ -129,6 +129,25 @@ platformon is történjen ez meg legközelebb. Használd a **"Sync now"**-t
 (Settings > Frameworks) közvetlenül egy módosítás után, ha biztos
 akarsz lenni benne, hogy az azonnal átkerül.
 
+**A tab-változások szinkronizálásához szükséges a "Save workspace"
+parancs futtatása (core Obsidian parancs).** Az Obsidian nem írja
+folyamatosan vissza a megnyitott tab-ok állapotát a
+`workspaces.json`-ba — egy workspace-bejegyzés csak akkor frissül ott,
+ha expliciten elmented. A mi pluginunk időszakos újraépítése ebből a
+fájlból olvas, tehát ha megnyitsz egy új tabot, de nem mentesz, a
+snapshot még a régi tab-állapotot fogja tartalmazni. A helyes
+folyamat: új tab megnyitása → "Save workspace" → (a plugin 30
+másodpercen belül felveszi, vagy azonnal a "Sync now"-val) → push.
+
+Ez fejlesztői döntés, nem technikai korlát, amin könnyen lehetne
+segíteni. Egyes pluginok (pl. Workspaces Plus) kínáltak
+"auto-save workspace-váltáskor" funkciót, de ha a mentés a háttérben,
+automatikusan történik, a user elveszíti az irányítást afelett, hogy
+mi kerül a `workspaces.json`-ba — egy véletlenszerű állapot
+(átszervezés közben, félig bezárt tab-okkal) csendben kiíródhat, és
+átkerülhet a másik platformra is. A "Save workspace" mint tudatos,
+explicit aktus megtartása ezt elkerüli.
+
 ---
 
 ## Kizárt workspace-ek

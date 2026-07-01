@@ -121,6 +121,23 @@ whichever platform runs next. Use **"Sync now"** (Settings > Frameworks)
 right after making a change if you want to be sure it propagates
 immediately.
 
+**You need to run "Save workspace" (core Obsidian command) before a
+tab change is picked up.** Obsidian does not continuously write the
+current open tabs back to `workspaces.json` — a workspace entry only
+updates there when you explicitly save it. Our plugin's periodic rebuild
+reads from that file, so if you open a new tab and don't save, the
+snapshot will still contain the old tab state. The correct flow is:
+open tab → "Save workspace" → (plugin picks it up within 30 seconds,
+or immediately with "Sync now") → push.
+
+This is a deliberate design decision, not a technical limitation that
+could be worked around. Some plugins (e.g. Workspaces Plus) offered
+auto-save on workspace switch, but auto-saving in the background means
+the user loses control over what gets committed to `workspaces.json` —
+an accidental state (mid-reorganisation, half-closed tabs) could be
+silently written out and then propagated to the other platform. Keeping
+"Save workspace" as an explicit, conscious act avoids this.
+
 ---
 
 ## Excluded workspaces
