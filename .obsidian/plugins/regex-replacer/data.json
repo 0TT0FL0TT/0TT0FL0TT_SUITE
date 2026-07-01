@@ -1,5 +1,5 @@
 {
-  "pattern": "> \\[\\!.+?\\]",
+  "pattern": "",
   "replacement": "",
   "flags": "",
   "onlySelection": false,
@@ -44,8 +44,16 @@
       "flags": "gm",
       "onlySelection": false,
       "replaceAll": false
+    },
+    {
+      "name": "Foonote, AI Mode and Wiki Clip Cleaner",
+      "pattern": "\\[\\^?[0-9]{1,3}(?:,\\s*[0-9]{1,3})*\\]|\\[\\[\\^?[0-9]{1,3}(?:,\\s*[0-9]{1,3})*\\]\\(.*\\)\\]|<sup about.*?<\\/sup>|\\\\\\[\\[szerkesztés.*\\\\\\]",
+      "replacement": "",
+      "flags": "gm",
+      "onlySelection": true,
+      "replaceAll": false
     }
   ],
   "autoPreview": true,
-  "currentPresetName": "Callouts in activeFile"
+  "currentPresetName": "Wikilinks Remover"
 }

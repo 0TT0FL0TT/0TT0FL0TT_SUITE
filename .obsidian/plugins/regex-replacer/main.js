@@ -1,7 +1,7 @@
 const { Plugin, WorkspaceLeaf, ItemView, Setting, Notice, Modal, Menu } = require("obsidian");
 
 const VIEW_TYPE_REGEX_REPLACE = "regex-replace-view";
-const MAX_MATCHES_TO_DISPLAY = 100;
+const MAX_MATCHES_TO_DISPLAY = 500;
 const MAX_TEXT_LENGTH_FOR_AUTO_PREVIEW = 50000; // 50k characters
 const DEBOUNCE_DELAY = 500; // ms
 
@@ -177,6 +177,214 @@ class RegexReplaceView extends ItemView {
 	_syncToggleUI() {
 		if (this.controls.selToggle) this.controls.selToggle.toggleClass("active", this.onlySelection);
 		if (this.controls.allToggle) this.controls.allToggle.toggleClass("active", this.replaceAll);
+	}
+
+	// Renders the preset list inside the floating popup.
+	renderPresetList() {
+		const listEl = this.presetListEl;
+		if (!listEl) return;
+		listEl.empty();
+
+		if (this.plugin.settings.presets.length === 0) {
+			listEl.createEl("div", { text: "No presets saved yet.", attr: { style: "font-size:0.8em; color:var(--text-faint); padding:6px 4px;" } });
+			return;
+		}
+
+		this.plugin.settings.presets.forEach((p) => {
+			const row = listEl.createDiv({ cls: "regex-preset-row" });
+			row.dataset.name = p.name;
+			if (p.name === this.currentPresetName) row.addClass("active");
+
+			const handle = row.createEl("span", { cls: "regex-preset-handle", text: "⠿" });
+
+			const nameEl = row.createEl("span", { cls: "regex-preset-name", text: p.name });
+			nameEl.title = p.name;
+			nameEl.addEventListener("click", () => {
+				this.loadPreset(p);
+				this.currentPresetName = p.name;
+				this.plugin.settings.currentPresetName = p.name;
+				this.plugin.saveData(this.plugin.settings);
+				this._updatePresetSelectorLabel();
+				this.renderPresetList();
+				this.closePresetPopup();
+				new Notice("Loaded: " + p.name);
+			});
+
+			const delBtn = row.createEl("button", { cls: "regex-preset-delete", text: "✕" });
+			delBtn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				new ConfirmModal(this.app, `Delete preset "${p.name}"? This can't be undone.`, async () => {
+					this.plugin.settings.presets = this.plugin.settings.presets.filter(pr => pr.name !== p.name);
+					if (this.currentPresetName === p.name) {
+						this.currentPresetName = null;
+						this.plugin.settings.currentPresetName = null;
+					}
+					await this.plugin.saveData(this.plugin.settings);
+					this._updatePresetSelectorLabel();
+					this.renderPresetList();
+					new Notice("Deleted: " + p.name);
+				}).open();
+			});
+
+			this._attachDragHandlers(handle, row, listEl);
+		});
+	}
+
+	// Creates the floating popup div (portaled to document.body so it never takes sidebar space)
+	// and wires up the outside-click dismiss. The popup is hidden by default.
+	_buildPresetPopup() {
+		// Remove any stale popup from a previous open of this view
+		document.getElementById("regex-preset-popup")?.remove();
+
+		const popup = document.createElement("div");
+		popup.id = "regex-preset-popup";
+		popup.className = "regex-preset-popup";
+		popup.style.display = "none";
+
+		const listEl = document.createElement("div");
+		listEl.className = "regex-preset-list";
+		popup.appendChild(listEl);
+		document.body.appendChild(popup);
+
+		this.presetPopupEl = popup;
+		this.presetListEl = listEl;
+		this.renderPresetList();
+
+		// Outside-click: close popup when clicking anywhere that isn't the popup or the selector btn
+		this._popupOutsideClick = (e) => {
+			if (!this.presetPopupEl) return;
+			if (this.presetPopupEl.contains(e.target)) return;
+			if (this.presetSelectorBtn && this.presetSelectorBtn.contains(e.target)) return;
+			this.closePresetPopup();
+		};
+	}
+
+	togglePresetPopup() {
+		if (!this.presetPopupEl) return;
+		if (this.presetPopupEl.style.display === "none") {
+			this._openPresetPopup();
+		} else {
+			this.closePresetPopup();
+		}
+	}
+
+	_openPresetPopup() {
+		const popup = this.presetPopupEl;
+		const btn = this.presetSelectorBtn;
+		if (!popup || !btn) return;
+
+		// Position the popup just below the selector button
+		const rect = btn.getBoundingClientRect();
+		popup.style.display = "block";
+		popup.style.position = "fixed";
+		popup.style.zIndex = "9999";
+		popup.style.minWidth = Math.max(rect.width + 40, 180) + "px";
+
+		// Default: open downward
+		const spaceBelow = window.innerHeight - rect.bottom;
+		const popupH = popup.offsetHeight || 180;
+		if (spaceBelow >= popupH || spaceBelow >= 120) {
+			popup.style.top = (rect.bottom + 4) + "px";
+			popup.style.bottom = "";
+		} else {
+			// Flip upward if not enough space below
+			popup.style.bottom = (window.innerHeight - rect.top + 4) + "px";
+			popup.style.top = "";
+		}
+		popup.style.left = rect.left + "px";
+
+		document.addEventListener("pointerdown", this._popupOutsideClick, true);
+	}
+
+	closePresetPopup() {
+		if (this.presetPopupEl) this.presetPopupEl.style.display = "none";
+		document.removeEventListener("pointerdown", this._popupOutsideClick, true);
+	}
+
+	_updatePresetSelectorLabel() {
+		if (!this.presetSelectorBtn) return;
+		if (this.currentPresetName) {
+			this.presetSelectorBtn.textContent = "▾ " + this.currentPresetName;
+			this.presetSelectorBtn.title = this.currentPresetName;
+		} else {
+			this.presetSelectorBtn.textContent = "▾ Presets…";
+			this.presetSelectorBtn.title = "Click to open preset list";
+		}
+	}
+
+	// Pointer Events (not HTML5 dragstart/dragover) so this works with mouse, touch, and pen —
+	// including Obsidian mobile. On every move we compute the row's correct slot directly from
+	// the pointer's Y position (rather than swapping one neighbor at a time), so a fast or long
+	// drag lands in the right place in a single step instead of stalling after one position.
+	_attachDragHandlers(handle, row, listEl) {
+		let dragging = false;
+		let pointerId = null;
+
+		const onPointerMove = (e) => {
+			if (!dragging || e.pointerId !== pointerId) return;
+			e.preventDefault();
+			const y = e.clientY;
+			const siblings = Array.from(listEl.children).filter(el => el !== row);
+
+			// Find the first sibling whose vertical midpoint is below the pointer;
+			// the row belongs immediately before it. If none, it belongs at the end.
+			let target = null;
+			for (const sib of siblings) {
+				const rect = sib.getBoundingClientRect();
+				const mid = rect.top + rect.height / 2;
+				if (y < mid) { target = sib; break; }
+			}
+
+			if (target) {
+				if (target !== row.nextSibling) listEl.insertBefore(row, target);
+			} else if (listEl.lastChild !== row) {
+				listEl.appendChild(row);
+			}
+		};
+
+		const cleanup = (e) => {
+			if (!dragging) return;
+			if (e && e.pointerId !== undefined && e.pointerId !== pointerId) return;
+			dragging = false;
+			row.removeClass("dragging");
+			document.removeEventListener("pointermove", onPointerMove);
+			document.removeEventListener("pointerup", cleanup);
+			document.removeEventListener("pointercancel", cleanup);
+			handle.removeEventListener("lostpointercapture", cleanup);
+			try {
+				if (pointerId !== null) handle.releasePointerCapture(pointerId);
+			} catch (err) { /* already released */ }
+			this._persistPresetOrder(listEl);
+		};
+
+		handle.addEventListener("pointerdown", (e) => {
+			if (dragging) return;
+			e.preventDefault();
+			dragging = true;
+			pointerId = e.pointerId;
+			row.addClass("dragging");
+			try {
+				handle.setPointerCapture(pointerId);
+			} catch (err) { /* not supported; document-level listeners still cover the drag */ }
+			// Listening on document (not just the handle) means the drag keeps working even if
+			// pointer capture is dropped mid-gesture on some mobile browsers.
+			document.addEventListener("pointermove", onPointerMove);
+			document.addEventListener("pointerup", cleanup);
+			document.addEventListener("pointercancel", cleanup);
+			handle.addEventListener("lostpointercapture", cleanup);
+		});
+	}
+
+	_persistPresetOrder(listEl) {
+		const orderedNames = Array.from(listEl.children).map(row => row.dataset.name);
+		const byName = new Map(this.plugin.settings.presets.map(p => [p.name, p]));
+		const reordered = orderedNames.map(name => byName.get(name)).filter(Boolean);
+		// Safety net: keep any preset not accounted for (shouldn't normally happen)
+		byName.forEach((p, name) => {
+			if (!orderedNames.includes(name)) reordered.push(p);
+		});
+		this.plugin.settings.presets = reordered;
+		this.plugin.saveData(this.plugin.settings);
 	}
 
 	updatePreview() {
@@ -593,16 +801,9 @@ class RegexReplaceView extends ItemView {
 				}
 				.regex-preset-header {
 					display: flex;
+					align-items: center;
 					gap: 4px;
 					margin-bottom: 6px;
-				}
-				.regex-preset-dropdown {
-					flex: 1;
-					padding: 4px 6px;
-					font-size: 0.8em;
-					border: 1px solid var(--background-modifier-border);
-					border-radius: 4px;
-					background: var(--background-primary);
 				}
 				.regex-menu-btn {
 					padding: 4px 8px;
@@ -612,49 +813,96 @@ class RegexReplaceView extends ItemView {
 					background: var(--background-secondary);
 					cursor: pointer;
 				}
+				.regex-preset-popup {
+					position: fixed;
+					z-index: 9999;
+					background: var(--background-primary);
+					border: 1px solid var(--background-modifier-border);
+					border-radius: 6px;
+					box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+					padding: 4px;
+					min-width: 180px;
+					max-height: 220px;
+					overflow-y: auto;
+				}
+				.regex-preset-selector-btn {
+					flex: 1;
+					padding: 4px 8px;
+					font-size: 0.8em;
+					border: 1px solid var(--background-modifier-border);
+					border-radius: 4px;
+					background: var(--background-secondary);
+					cursor: pointer;
+					text-align: left;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				.regex-preset-selector-btn:hover {
+					background: var(--background-modifier-hover);
+				}
+				.regex-preset-row {
+					display: flex;
+					align-items: center;
+					gap: 4px;
+					padding: 3px 4px;
+					border-radius: 3px;
+					background: var(--background-secondary);
+					touch-action: none;
+				}
+				.regex-preset-row.active {
+					border: 1px solid var(--interactive-accent);
+				}
+				.regex-preset-row.dragging {
+					opacity: 0.5;
+					background: var(--background-modifier-hover);
+				}
+				.regex-preset-handle {
+					cursor: grab;
+					color: var(--text-faint);
+					font-size: 0.9em;
+					padding: 0 4px;
+					line-height: 1;
+					touch-action: none;
+					user-select: none;
+				}
+				.regex-preset-handle:active {
+					cursor: grabbing;
+				}
+				.regex-preset-name {
+					flex: 1;
+					font-size: 0.8em;
+					color: var(--text-normal);
+					cursor: pointer;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				.regex-preset-delete {
+					padding: 2px 6px;
+					font-size: 0.75em;
+					border: none;
+					border-radius: 3px;
+					background: transparent;
+					color: var(--text-faint);
+					cursor: pointer;
+				}
+				.regex-preset-delete:hover {
+					color: var(--text-error);
+					background: var(--background-modifier-hover);
+				}
 			`
 		});
 
 		const controlsDiv = container.createDiv("regex-compact-controls");
 
-		// Preset management
+		// Preset management — a compact selector bar. The draggable preset list itself lives in
+		// a floating popup (portaled to <body>) so it never permanently eats sidebar height;
+		// it only appears while open, and closes on outside click.
 		const presetHeader = controlsDiv.createDiv("regex-preset-header");
-		// Add current preset display FIRST (before event listener that references it)
-		const currentPresetDisplay = controlsDiv.createEl("div", {
-			text: this.currentPresetName || "",
-			attr: {
-				style: `display: ${this.currentPresetName ? 'block' : 'none'}; padding: 6px 8px; margin-bottom: 6px; background: var(--background-secondary); border-left: 3px solid var(--interactive-accent); border-radius: 3px; font-size: 0.8em; color: var(--text-muted); word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;`
-			}
-		});
-		if (this.currentPresetName) {
-			currentPresetDisplay.title = this.currentPresetName;
-		}
 
-		const presetDropdown = presetHeader.createEl("select", { cls: "regex-preset-dropdown" });
-		presetDropdown.createEl("option", { text: "Load preset...", value: "" });
-		this.plugin.settings.presets.forEach(p => {
-			presetDropdown.createEl("option", { text: p.name, value: p.name });
-		});
-
-		presetDropdown.addEventListener("change", (e) => {
-			const val = e.target.value;
-			if (val) {
-				const preset = this.plugin.settings.presets.find(p => p.name === val);
-				if (preset) {
-					this.loadPreset(preset);
-					this.currentPresetName = val;
-					this.plugin.settings.currentPresetName = val;
-					this.plugin.saveData(this.plugin.settings);
-					if (currentPresetDisplay) {
-						currentPresetDisplay.textContent = val;
-						currentPresetDisplay.style.display = "block";
-						currentPresetDisplay.title = val;
-					}
-					new Notice("Loaded: " + val);
-				}
-				presetDropdown.value = "";
-			}
-		});
+		const presetSelectorBtn = presetHeader.createEl("button", { cls: "regex-preset-selector-btn" });
+		this.presetSelectorBtn = presetSelectorBtn;
 
 		const menuBtn = presetHeader.createEl("button", { text: "⋮", cls: "regex-menu-btn" });
 		menuBtn.addEventListener("click", (e) => {
@@ -673,44 +921,11 @@ class RegexReplaceView extends ItemView {
 							replaceAll: this.replaceAll
 						});
 						this.plugin.saveData(this.plugin.settings);
-						
-						// Refresh dropdown
-						presetDropdown.innerHTML = "";
-						presetDropdown.createEl("option", { text: "Load preset...", value: "" });
-						this.plugin.settings.presets.forEach(p => {
-							presetDropdown.createEl("option", { text: p.name, value: p.name });
-						});
-						
+						this.renderPresetList();
 						new Notice("Preset saved: " + name);
 					}).open();
 				})
 			);
-
-			if (this.plugin.settings.presets.length > 0) {
-				menu.addSeparator();
-				menu.addItem((item) =>
-					item.setTitle("Delete preset...").setIcon("trash").onClick(() => {
-						const deleteMenu = new Menu();
-						this.plugin.settings.presets.forEach(p => {
-							deleteMenu.addItem((delItem) =>
-								delItem.setTitle(p.name).onClick(async () => {
-									this.plugin.settings.presets = this.plugin.settings.presets.filter(pr => pr.name !== p.name);
-									await this.plugin.saveData(this.plugin.settings);
-									
-									presetDropdown.innerHTML = "";
-									presetDropdown.createEl("option", { text: "Load preset...", value: "" });
-									this.plugin.settings.presets.forEach(pr => {
-										presetDropdown.createEl("option", { text: pr.name, value: pr.name });
-									});
-									
-									new Notice("Deleted: " + p.name);
-								})
-							);
-						});
-						deleteMenu.showAtMouseEvent(e);
-					})
-				);
-			}
 
 			menu.addSeparator();
 			menu.addItem((item) =>
@@ -726,6 +941,13 @@ class RegexReplaceView extends ItemView {
 
 			menu.showAtMouseEvent(e);
 		});
+
+		presetSelectorBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			this.togglePresetPopup();
+		});
+		this._updatePresetSelectorLabel();
+		this._buildPresetPopup();
 
 		// Pattern input
 		controlsDiv.createEl("span", { text: "Pattern", cls: "regex-label" });
@@ -827,6 +1049,12 @@ class RegexReplaceView extends ItemView {
 		if (this.previewTimeout) {
 			clearTimeout(this.previewTimeout);
 		}
+		// Remove the body-portaled popup to avoid orphaned DOM nodes
+		this.closePresetPopup();
+		if (this.presetPopupEl) {
+			this.presetPopupEl.remove();
+			this.presetPopupEl = null;
+		}
 		this.plugin.settings = { 
 			...this.plugin.settings, 
 			pattern: this.pattern, 
@@ -838,6 +1066,31 @@ class RegexReplaceView extends ItemView {
 			currentPresetName: this.currentPresetName
 		};
 		await this.plugin.saveData(this.plugin.settings);
+	}
+}
+
+class ConfirmModal extends Modal {
+	constructor(app, message, onConfirm) {
+		super(app);
+		this.message = message;
+		this.onConfirm = onConfirm;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.createEl("h2", { text: "Are you sure?" });
+		contentEl.createEl("p", { text: this.message });
+
+		new Setting(contentEl)
+			.addButton((b) => b.setButtonText("Delete").setWarning().onClick(() => {
+				this.close();
+				this.onConfirm();
+			}))
+			.addButton((b) => b.setButtonText("Cancel").onClick(() => this.close()));
+	}
+
+	onClose() {
+		this.contentEl.empty();
 	}
 }
 
