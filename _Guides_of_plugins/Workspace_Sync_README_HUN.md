@@ -1,86 +1,192 @@
 # Workspace Sync
 
-Lehetővé teszi, hogy az Obsidianben elmentett munkaterületeid ugyanúgy használhatók maradjanak asztali gépen és mobilon is, annak ellenére, hogy a két platform oldalsáv-struktúrája nem kompatibilis egymással (`split` asztali gépen, `mobile-drawer` mobilon). A megnyitott fülek mindig érintetlenek maradnak — és platformok között is szinkronban maradnak, beleértve az újonnan létrehozott vagy törölt munkaterületeket is.
+Lehetővé teszi, hogy a mentett Obsidian workspace-eid desktopon és
+mobilon is használhatóak legyenek, annak ellenére, hogy a sidebar
+szerkezete a két platformon nem kompatibilis egymással (`split`
+desktopon, `mobile-drawer` mobilon). A megnyitott tab-okhoz a plugin
+sosem nyúl — ezek mindig szinkronban maradnak a platformok között,
+beleértve az újonnan létrehozott vagy törölt workspace-eket is.
 
 ---
 
-## Hogyan működik (minden beállítás esetén ugyanazzal a mechanizmussal)
+## Hogyan működik (minden beállításnál ugyanaz a mechanizmus)
 
-Az Obsidianhez nem tartozik dokumentált API arra, hogy egy `workspaces.json` fájlban meg lehessen állapítani, melyik munkaterület-bejegyzés melyik platformhoz tartozik, és nincs esemény sem arra, hogy „egy munkaterület el lett mentve / hozzá lett adva / törölve lett”. Ezért a plugin mindig **két teljes, azonnal betölthető** másolatot tart fenn a `workspaces.json` fájlból:
+Nincs dokumentált Obsidian API arra, hogy "melyik workspace-bejegyzés
+melyik platformhoz tartozik" egy `workspaces.json`-on belül, és nincs
+esemény arra se, hogy "egy workspace mentve/létrehozva/törölve lett".
+Ezért a plugin mindig **két teljes, azonnal betölthető** másolatát
+tartja fenn a `workspaces.json`-nak a vault-odban:
 
-```text
-<vault>/.workspace-sync/workspaces.pc.json      (minden munkaterület, ASZTALI keretrendszerrel)
-<vault>/.workspace-sync/workspaces.mobile.json  (minden munkaterület, MOBIL keretrendszerrel)
+```
+<vault>/.workspace-sync/workspaces.pc.json      (minden workspace, a DESKTOP kerettel)
+<vault>/.workspace-sync/workspaces.mobile.json  (minden workspace, a MOBIL kerettel)
 ```
 
-A `.workspace-sync` itt nincs beégetve — mindig azt a mappát jelenti, amelyet a Beállításokban a **megosztott keretrendszerfájl elérési útjaként** állítottál be (alapértelmezés szerint `.workspace-sync/frameworks.json`). Mindkét pillanatképfájl mindig ugyanebben a mappában található, közvetlenül a `frameworks.json` mellett. Ha például úgy döntesz, hogy az útvonal legyen `.my-sync-folder/frameworks.json`, akkor a pillanatképek neve automatikusan:
+A `.workspace-sync` itt nincs hardcode-olva — az a mappa, amit a
+**megosztott keret-fájl útvonalánál** beállítasz a Settings fülön
+(alapértelmezetten `.workspace-sync/frameworks.json`). Mindkét
+snapshot-fájl mindig ugyanabban a mappában él, közvetlenül a
+`frameworks.json` mellett. Ha az útvonalat pl.
+`.sajat-sync-mappam/frameworks.json`-ra állítod, a snapshot-ok
+`.sajat-sync-mappam/workspaces.pc.json` és
+`.sajat-sync-mappam/workspaces.mobile.json` lesznek — nincs külön
+beállítás ehhez, a mappanév mindhárom fájlra közös. Ennek a beállításnak
+a megváltoztatása azonnal érvénybe lép (nem kell újraindítani Obsidiant);
+a **régi** mappában maradt snapshot-fájlok érintetlenül megmaradnak,
+ezért használd a "Sync now"-t közvetlenül átnevezés után, hogy az új
+mappa is feltöltődjön.
 
-`.my-sync-folder/workspaces.pc.json`
+**Időszakosan** (alapértelmezetten 30 másodpercenként, a Settings-ben
+állítható), a plugin újraépíti **mindkét** fent említett fájlt a natív
+`workspaces.json` jelenlegi állapotából — bármit is mentettél, vettél
+fel, vagy töröltél a legutóbbi újraépítés óta. Ez bármelyik platformon
+megtörténik, tehát ha desktopon mentesz, az azonnal létrehozza a
+mobilra kész verziót is — nem kell előbb mobilon megnyitnod
+Obsidiant ahhoz, hogy ez megtörténjen.
 
-és
+A plugin szándékosan **nem** figyel minden layout-változást, amíg
+dolgozol (nincs event listener, ami minden tab-váltásra vagy
+fájlmegnyitásra lefutna) — ez session közben feleslegesen, állandóan
+ellenőrizné a vault-ot, valódi haszon nélkül. Az időzítő, plusz a
+manuális **"Sync now"** gomb (Settings, Frameworks alatt), ha azonnal
+szeretnéd, hogy valami átkerüljön — ez a két trigger, semmi más.
 
-`.my-sync-folder/workspaces.mobile.json`
+**Induláskor** a plugin egyáltalán nem merge-el — egyszerűen átmásolja
+a jelenlegi platformhoz tartozó, már kész fájlt a natív
+`workspaces.json`-ba, amit Obsidian olvas, mert Obsidian csak ezt a
+formátumot tudja beolvasni egy valódi config mappából.
 
-lesz. Ehhez nincs külön beállítás; ugyanazt a mappát használja mindhárom fájl. Ennek a beállításnak a módosítása azonnal életbe lép (újraindítás nélkül); a régi mappában lévő pillanatképfájlok érintetlenül megmaradnak, ezért átnevezés után érdemes rögtön a **Sync now** gombot használni, hogy az új mappa is feltöltődjön.
-
-**Időszakosan** (alapértelmezés szerint 30 másodpercenként, ez a Beállításokban módosítható) a plugin újraépíti a fenti **mindkét** fájlt a natív `workspaces.json` aktuális állapotából — vagyis minden olyan munkaterület alapján, amelyet az előző újraépítés óta elmentettél, létrehoztál vagy töröltél. Ez attól függetlenül megtörténik, hogy melyik platformon dolgozol, így ha asztali gépen mentesz egy munkaterületet, abból automatikusan elkészül a használatra kész mobilos változat is — ehhez nem szükséges előbb megnyitni az Obsidiant mobilon.
-
-A plugin szándékosan **nem** figyeli folyamatosan az elrendezés minden változását munka közben (nincs olyan eseményfigyelő, amely minden fülváltásnál vagy fájlmegnyitásnál lefutna), mert ez a munkamenet során folyamatos ellenőrzést jelentene a tárolón, valódi előny nélkül. Az időszakos időzítő, valamint a kézi **Sync now** gomb (Beállítások → Keretrendszerek), amikor azt szeretnéd, hogy valami azonnal továbbterjedjen, elegendő egyetlen frissítési mechanizmusként.
-
-**Indításkor** a plugin egyáltalán nem végez összevonást — egyszerűen bemásolja az aktuális platformhoz tartozó előre elkészített fájlt abba a natív `workspaces.json` fájlba, amelyből az Obsidian olvas, mert az Obsidian kizárólag ezt a formátumot tudja valódi konfigurációs mappából betölteni.
-
-Ez ugyanaz a működési mechanizmus akkor is, ha egyetlen közös konfigurációs mappát használsz, és akkor is, ha kettőt külön-külön — csak a célfájl elérési útja változik (lásd lentebb). Nincs külön „mód” kapcsoló: kizárólag az dönti el, hogy a plugin melyik natív fájlból olvas és melyikbe ír minden alkalommal, minden platformon külön-külön, hogy a **`workspaces.json` path** beállítás üres-e vagy ki van töltve.
+Ez ugyanaz a mechanizmus, akár egy közös config mappád van, akár kettő
+külön — csak a célútvonal más (lásd alább). Nincs sehol külön
+"mód"-kapcsoló: az, hogy a **workspaces.json útvonal** beállítás üres
+vagy ki van töltve, ez az egyetlen dolog, ami eldönti, melyik natív
+fájlból olvas és melyikbe ír a plugin, minden alkalommal, minden
+platformon egymástól függetlenül.
 
 ---
 
 ## Beállítás
 
-### Egyetlen közös konfigurációs mappa (ez a leggyakoribb)
+### Egy közös config mappa (a tipikus eset)
 
-Hagyd üresen a Beállításokban a **`workspaces.json` path** mezőt. A plugin ilyenkor maga állítja elő az útvonalat az Obsidian tényleges konfigurációs mappanevéből (`Vault.configDir`), ezért akkor is működik, ha a `.obsidian` mappát átnevezted valami másra.
+Hagyd üresen a **workspaces.json útvonal** mezőt a Settings fülön. A
+plugin maga építi fel az útvonalat Obsidian valódi config
+mappanevéből (`Vault.configDir`), tehát akkor is működik, ha a
+`.obsidian`-t átnevezted valami másra.
 
-### Platformonként külön konfigurációs mappák
+### Külön config mappa platformonként
 
-Ha kézzel úgy állítottad be az Obsidian-t, hogy platformonként külön konfigurációs mappát használjon (például `.windows` asztali gépen), akkor a **`workspaces.json` path** mezőbe az adott platform saját fájlját add meg (például `.windows/workspaces.json`). Ezt **minden platform plugintelepítésében külön-külön** kell beállítani, mindig az adott platform saját fájljára mutatva, soha nem a másikéra. Ez a beállítás a konfigurációs mappában található `data.json` fájlban tárolódik, ezért minden telepítés csak a saját útvonalát ismeri.
+Ha kézzel állítottad be, hogy Obsidian platformonként külön config
+mappát használjon (pl. `.windows` desktopon), állítsd a
+**workspaces.json útvonalat** az adott platform saját fájljára (pl.
+`.windows/workspaces.json`) — ezt **külön, mindegyik platform saját
+plugin-telepítésén** kell beállítani, mindig az adott platform saját
+fájljára mutatva, sosem a másikéra. Ez a `data.json`-ban tárolódik,
+ami a config mappa belsejében él, tehát minden telepítés csak a saját
+útvonalát ismeri.
 
-A megosztott mappa, amelyben mindkét használatra kész pillanatkép és a keretrendszerfájl található, mindkét esetben ugyanaz marad — a tároló gyökerében helyezkedik el (a neve az, amit a Beállításokban a **megosztott keretrendszerfájl elérési útjaként** megadtál; lásd fentebb), nem pedig valamelyik konfigurációs mappában. Így a tároló szinkronizálása (Git, Obsidian Sync, iCloud, Syncthing stb.) ugyanúgy átviszi mindkét platformra, mint bármely más fájlt.
+A megosztott mappa, ahol a kész snapshot-ok és a keret-fájl is él,
+mindkét esetben ugyanaz — a vault gyökerében van (a neve az, amit a
+**megosztott keret-fájl útvonalánál** beállítasz, lásd fent), nem egy
+config mappa belsejében, tehát a vault-szinkronod (Git, Obsidian Sync,
+iCloud, Syncthing, stb.) ugyanúgy átviszi mindkét platformra, mint
+bármelyik más fájlt.
 
-### Keretrendszer importálása
+### Keret importálása
 
-A munkaterület minden része, kivéve a megnyitott füleket — vagyis a bal és jobb oldali oldalsáv, valamint a szalag — alkotja a „keretrendszert”. Ezt egy, a tárolódban található fájlból választod ki.
+Minden, ami egy workspace-ben van, a megnyitott tab-okat kivéve — a
+bal/jobb oldali sidebar-ok és a ribbon — az a "framework" (keret". Ezt
+egy, a vault-odban már létező fájlból választod ki, platformonként
+egyet:
 
-1. Győződj meg róla, hogy rendelkezésre áll a kívánt asztali `workspace.json` és mobilos `workspace-mobile.json` fájl (ezek az egyedi fájlok mindig az adott platform legutóbbi munkamenetét tükrözik). A „kívánt” alatt azt értjük, hogy az Obsidian bezárása előtt állítsd be a szalagot és az oldalsávokat pontosan úgy, ahogyan szeretnéd, hogy a keretrendszerfájlokban szerepeljenek.
-2. A Beállításokban használd a **"Pick file (desktop)"** illetve **"Pick file (mobile)"** gombot — ezek kizárólag pontosan ilyen nevű fájlokat jelenítenek meg, így nem lehet véletlenül rosszat kiválasztani.
+1. Mindegyik platformon állítsd be Obsidiant úgy, hogy a ribbon és a
+   sidebar elemei pontosan úgy nézzenek ki, ahogy szeretnéd, hogy
+   mindenhol kinézzenek — ez a "kívánt" állapot, amit keretként
+   szeretnél használni. Ehhez nem kell külön semmit "elmenteni":
+   Obsidian mindig kiírja a legutóbbi sessionödet a `workspace.json`-ba
+   desktopon, illetve a `workspace-mobile.json`-ba mobilon — tehát
+   amint a layout jónak néz ki a képernyőn, az a fájl már tartalmazza
+   azt.
+2. Használd a **"Pick file (desktop)"** / **"Pick file (mobile)"**
+   gombokat a Settings fülön — ezek csak a pontosan ilyen nevű fájlokat
+   listázzák, tehát nincs esély arra, hogy rossz fájlt válassz.
 
-Mindkét keretrendszer a következő fájlban kerül tárolásra:
-
-`<vault>/.workspace-sync/frameworks.json`
+Mindkét keret együtt tárolódik a
+`<vault>/.workspace-sync/frameworks.json`-ban (vagy ahová a megosztott
+keret-fájl útvonalat beállítottad, lásd fent).
 
 ---
 
 ## Korlátozás
 
-Mivel nincs eseményfigyelő, amely munkamenet közben követné a változásokat, minden módosítás — munkaterület mentése, új létrehozása vagy törlése — csak a következő időszakos újraépítéskor kerül feldolgozásra (alapértelmezés szerint 30 másodpercenként). Ha végrehajtasz egy módosítást, majd ezen időablakon belül bezárod az Obsidian-t, előfordulhat, hogy a pillanatképfájlok csak a következő, valamelyik platformon lefutó időszakos újraépítés során frissülnek. Ha biztosra szeretnél menni, közvetlenül a módosítás után használd a **Sync now** gombot (Beállítások → Keretrendszerek), hogy a változás azonnal továbbterjedjen.
+Mivel nincs event listener, ami session közben figyelné a
+változásokat, minden módosítást — workspace mentése, új létrehozása,
+törlése — csak az időszakos újraépítés vesz észre (alapértelmezetten
+30 másodpercenként). Ha módosítasz valamit, és ezen az ablakon belül
+zárod be Obsidiant, az esetleg nem fog megjelenni a snapshot-fájlokban
+addig, amíg a következő időszakos újraépítés le nem fut, bármelyik
+platformon is történjen ez meg legközelebb. Használd a **"Sync now"**-t
+(Settings > Frameworks) közvetlenül egy módosítás után, ha biztos
+akarsz lenni benne, hogy az azonnal átkerül.
 
 ---
 
-## Kizárt munkaterületek
+## Kizárt workspace-ek
 
-Beállítások → Kizárt munkaterületek — azoknak a munkaterületeknek a nevei, amelyeket a plugin a pillanatképek újraépítése során soha nem módosít.
+Settings > Excluded Workspaces — azok a nevek, amikhez a plugin sosem
+nyúl a snapshot-ok újraépítésekor.
 
-Ezek tipikusan olyan munkaterületek lesznek, amelyek speciális célra eltérő szalag- és oldalsáv-elrendezést használnak (például külön nézet kereséshez, kutatáshoz vagy íráshoz, illetve több külső monitorhoz kialakított munkaterületek). Ezeknél a munkaterületeknél az elsődleges cél nem az, hogy a fő fülcsoport megnyitott lapjai platformok között szinkronban maradjanak, hanem hogy az oldalsávok szerkezete változatlan maradjon. Természetesen ezeknél a munkaterületeknél a fő fülcsoport elemei emiatt nem szinkronizálhatók.
+Ezek tipikusan azok a workspace-ek lesznek, amiknek saját, eltérő
+ribbon és sidebar beállítása kell egy speciális esethez — pl. egy
+külön elrendezés kereséshez, kutatáshoz, íráshoz, vagy egy workspace,
+amit több külső monitorhoz állítottál be. Ezekben a workspace-ekben a
+fő szempont az, hogy a sidebar/ribbon szerkezete sértetlen maradjon az
+adott platformon, nem az, hogy melyik fájl van megnyitva a platformok
+között szinkronban.
+
+**A kizárás mellékhatása: a fő tab-csoport (main) sem szinkronizálódik.**
+A kizárás egy workspace-en belül mind-vagy-semmi — nincs olyan
+beállítás, hogy a megnyitott tab-okat szinkronizáljuk, miközben a
+sidebar-t mégis érintetlenül hagyjuk. Egy workspace kizárása teljesen
+kihagyja minden jövőbeli snapshot-újraépítésből. Tehát természetesen
+egy kizárt workspace-ben a megnyitott fájlok sem kerülnek át desktop
+és mobil között — kizárólag az adott workspace szerkezete van védve az
+adott platformon.
+
+**Ez teljesen manuális.** A plugin önmagától nem tudja felismerni, hogy
+"ennek a workspace-nek speciális sidebar-ja van, hagyjuk békén" — nincs
+erre semmilyen automatikus heurisztika, és nem is kellene lennie, mert
+ez user-intent kérdés (melyik workspace-eknek kell követnie a közös
+keretet, és melyiknek szabad szándékosan eltérnie), nem egy mintázat,
+amit a plugin a layout-ból kikövetkeztethetne. Ha hónapokkal később
+felvesz egy új workspace-t, aminek saját sidebar/ribbon kell, azt
+neked kell kizárnod — a plugin nem fogja észrevenni, és nem fog
+rákérdezni.
+
+Egy workspace hozzáadása vagy eltávolítása a kizárt listából a
+Settings fülön azonnali újraépítést indít mindkét snapshot-fájlra.
+Amikor egy workspace-t felveszel a kizárt listára, a bejegyzése
+automatikusan törlődik mindkét snapshot-fájlból ugyanabban az
+újraépítésben — tehát ha a sidebar/ribbon-ját korábban már felülírta
+egy framework-build, a szennyezett bejegyzés azonnal kitakarításra
+kerül. A workspace saját, érintetlen natív állapota marad meg a
+diszken, és ez az állapot kerül megőrzésre a továbbiakban.
 
 ---
 
 ## Parancsok
 
-| Parancs                                              | Mit csinál                                                                                                                                                |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Push native workspaces.json to platform snapshot now | Azonnal újraépíti mindkét pillanatképfájlt. Ugyanazt végzi, mint a Beállításokban található **Sync now** gomb.                                            |
-| Import framework from vault file (desktop / mobile)  | Fájl kiválasztása keretrendszerként való használatra.                                                                                                     |
-| Exclude current workspace from sync                  | A jelenleg megnyitott munkaterület hozzáadása a kizárt listához.                                                                                          |
-| Reload frameworks from shared file                   | Újraolvassa a megosztott `frameworks.json` fájlt.                                                                                                         |
-| [Debug] Reload core Workspaces registry              | Újraindítás nélkül kézzel újraalkalmazza az utoljára betöltött pillanatképet az Obsidian beépített Workspaces nyilvántartására. Kizárólag hibakereséshez. |
+A legtöbb művelet a Settings fülön gombként él. A Command Palette csak
+azt listázza, amihez nincs egy-kattintásos Settings-megfelelő, plusz
+az egyetlen, leggyakrabban használt műveletet (gyors, billentyűzetes
+eléréshez) — szándékosan rövidre fogva, hogy egy új user ne ütközzön
+bele egy csomó számára ismeretlen parancsba.
+
+| Parancs | Mit csinál |
+|---|---|
+| Sync now | Azonnal újraépíti mindkét snapshot-fájlt. Megegyezik a Settings-ben lévő "Sync now" gombbal — ugyanaz a név, ugyanaz a művelet, csak a Command Palette-ből is elérhető. |
+| Reload frameworks from shared file | Újra beolvassa a megosztott frameworks.json-t, anélkül hogy újra kellene indítani Obsidiant. |
+| [Debug] Reload core Workspaces registry | Kézzel újraalkalmazza a legutóbb betöltött snapshot-ot Obsidian core Workspaces registry-jébe, újraindítás nélkül. Kizárólag hibakereséshez — nincs Settings UI megfelelője. |
 
 ---
 
@@ -88,8 +194,10 @@ Ezek tipikusan olyan munkaterületek lesznek, amelyek speciális célra eltérő
 
 ```bash
 npm install
-npm run dev      # figyelő mód, esbuild
-npm run build    # típusellenőrzés + production build
+npm run dev      # watch mode, esbuild
+npm run build    # type-check + production build
 ```
 
-Másold a `main.js` és `manifest.json` fájlokat a tárolód `.obsidian/plugins/workspace-sync/` mappájába (vagy a saját konfigurációs mappád megfelelő plugin könyvtárába).
+Másold a `main.js` és `manifest.json` fájlokat a vault-od
+`.obsidian/plugins/workspace-sync/` mappájába (vagy a saját config
+mappád megfelelő helyére).

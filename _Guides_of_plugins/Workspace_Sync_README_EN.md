@@ -23,9 +23,8 @@ complete, ready-to-load** copies of `workspaces.json` in your vault:
 `.workspace-sync` here is not hardcoded — it's whatever folder you set as
 the **shared framework file path** in Settings (default
 `.workspace-sync/frameworks.json`). Both snapshot files always live in
-that same folder, right next to `frameworks.json`. If you should see a
-need to set the path to e.g. `.my-sync-folder/frameworks.json`, the 
-snapshots become:  
+that same folder, right next to `frameworks.json`. If you set the path
+to e.g. `.my-sync-folder/frameworks.json`, the snapshots become
 `.my-sync-folder/workspaces.pc.json` and
 `.my-sync-folder/workspaces.mobile.json` — no separate setting for
 this, the folder name is shared across all three files. Changing this
@@ -46,7 +45,7 @@ while you work (no event listener firing on every tab switch or file
 open) — that would mean constantly re-checking the vault during a
 session for no real benefit. The periodic timer, plus the manual "Sync
 now" button (in Settings, under Frameworks) when you want something to
-propagate immediately, should suffice as the only triggers.
+propagate immediately, are the only triggers.
 
 **On startup**, the plugin does no merging at all — it just copies the
 one ready-made file for the current platform into the native
@@ -92,19 +91,22 @@ platforms like any other file.
 
 Everything in a workspace except the open tabs — the left/right
 sidebars and the ribbon — is the "framework". You pick it from a file
-in your vault:
+already sitting in your vault, one per platform:
 
-1. Make sure you have your desired desktop's `workspace.json` and mobile's
-   `workspace-mobile.json` available (these singular files always reflect
-   your last session on that platform). By desired we mean that you are
-   to leave your Obsidian with the workspace you set up with the state of
-   ribbon and sidebar items you deem worthy to use as you framework files.
+1. On each platform, set up Obsidian with the ribbon and sidebar items
+   arranged the way you want them to look everywhere — this is the
+   "desired" state you want as your framework. You don't need to
+   explicitly save anything for this: Obsidian always keeps your single
+   most recent session written to `workspace.json` on desktop and
+   `workspace-mobile.json` on mobile, so once the layout looks right on
+   screen, that file already reflects it.
 2. Use **"Pick file (desktop)"** / **"Pick file (mobile)"** in Settings
    — this only lists files with that exact name, so there's no risk of
    picking the wrong one.
 
 Both frameworks are stored together in
-`<vault>/.workspace-sync/frameworks.json`.
+`<vault>/.workspace-sync/frameworks.json` (or wherever you've pointed
+the shared framework file path, see above).
 
 ---
 
@@ -124,26 +126,55 @@ immediately.
 ## Excluded workspaces
 
 Settings > Excluded Workspaces — names the plugin never touches when
-rebuilding the snapshots.  
-These will probably be the workspaces that have different ribbon and sidebar
-settings for special cases (e.g. a different view for search, research and
-writing, or workspaces you have set up for multiple external monitors, etc.).
-In these workspaces the number one concern is not to sync the main tab group
-tabs (md files you were working on) across platforms but to keep the structure
-of the sidebars intact. Naturally, in these workspaces you cannot sync main
-tab group items then.  
+rebuilding the snapshots.
+
+These will typically be workspaces that need their own, different
+ribbon and sidebar setup for a special case — e.g. a dedicated layout
+for search, research, or writing, or a workspace you've set up for
+multiple external monitors. In these workspaces, the priority is
+keeping the sidebar/ribbon structure intact on each platform, not
+syncing which files are open across platforms.
+
+**Side effect of exclusion: the main tab group won't sync either.**
+Exclusion is all-or-nothing per workspace — there is no setting to sync
+the open tabs while still leaving the sidebar alone. Excluding a
+workspace skips it completely in every future snapshot rebuild. So
+naturally, in an excluded workspace, the files you have open won't
+carry over between desktop and mobile either — only that workspace's
+structure on this platform is protected.
+
+**This is entirely manual.** The plugin has no way to detect "this
+workspace has a special sidebar, leave it alone" on its own — there's
+no automatic heuristic for it, and there shouldn't be one, since this
+is about user intent (which workspaces are meant to follow the shared
+framework vs. which ones are deliberately different), not a pattern
+the plugin could infer from the layout itself. If you add a new
+workspace months later that needs its own sidebar/ribbon, you need to
+exclude it yourself — the plugin won't notice and won't ask.
+
+Adding or removing a workspace from the excluded list in Settings
+triggers an immediate rebuild of both snapshot files. When a workspace
+is added to the excluded list, its entry is automatically removed from
+both snapshot files in that same rebuild — so if its sidebar/ribbon was
+previously overwritten by a framework build, the stale entry is cleaned
+up immediately. The workspace's own, untouched native state is what
+remains on disk and is what gets preserved going forward.
 
 ---
 
 ## Commands
 
+Most actions are buttons in Settings. The Command Palette only lists
+what doesn't already have a one-click Settings equivalent, plus the
+single most frequently-used action (for quick keyboard access) —
+intentionally kept short so a new user isn't confronted with a wall of
+unfamiliar commands.
+
 | Command | What it does |
 |---|---|
-| Push native workspaces.json to platform snapshot now | Forces an immediate rebuild of both snapshot files. Same action as the "Sync now" button in Settings. |
-| Import framework from vault file (desktop / mobile) | Pick a file to use as the framework. |
-| Exclude current workspace from sync | Adds the open workspace to the excluded list. |
-| Reload frameworks from shared file | Re-reads the shared frameworks.json. |
-| [Debug] Reload core Workspaces registry | Manually re-applies the last-loaded snapshot into Obsidian's core Workspaces registry, without restarting. For troubleshooting only. |
+| Sync now | Forces an immediate rebuild of both snapshot files. Identical to, and named after, the "Sync now" button in Settings — just also reachable from the Command Palette. |
+| Reload frameworks from shared file | Re-reads the shared frameworks.json, without restarting Obsidian. |
+| [Debug] Reload core Workspaces registry | Manually re-applies the last-loaded snapshot into Obsidian's core Workspaces registry, without restarting. For troubleshooting only — has no Settings UI equivalent. |
 
 ---
 
