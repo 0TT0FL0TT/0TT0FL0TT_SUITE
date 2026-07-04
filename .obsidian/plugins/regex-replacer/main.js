@@ -1,7 +1,7 @@
 const { Plugin, WorkspaceLeaf, ItemView, Setting, Notice, Modal, Menu } = require("obsidian");
 
 const VIEW_TYPE_REGEX_REPLACE = "regex-replace-view";
-const MAX_MATCHES_TO_DISPLAY = 500;
+const MAX_MATCHES_TO_DISPLAY = 100;
 const MAX_TEXT_LENGTH_FOR_AUTO_PREVIEW = 50000; // 50k characters
 const DEBOUNCE_DELAY = 500; // ms
 
@@ -179,26 +179,82 @@ class RegexReplaceView extends ItemView {
 		if (this.controls.allToggle) this.controls.allToggle.toggleClass("active", this.replaceAll);
 	}
 
+	// Fuzzy-match: every character of the query must appear in the name in order (not necessarily adjacent)
+	_fuzzyMatch(name, query) {
+		if (!query) return { match: true, indices: [] };
+		const nameLower = name.toLowerCase();
+		const queryLower = query.toLowerCase();
+		const indices = [];
+		let ni = 0;
+		for (let qi = 0; qi < queryLower.length; qi++) {
+			const found = nameLower.indexOf(queryLower[qi], ni);
+			if (found === -1) return { match: false, indices: [] };
+			indices.push(found);
+			ni = found + 1;
+		}
+		return { match: true, indices };
+	}
+
 	// Renders the preset list inside the floating popup.
 	renderPresetList() {
 		const listEl = this.presetListEl;
 		if (!listEl) return;
-		listEl.empty();
+		listEl.empty ? listEl.empty() : (listEl.innerHTML = "");
 
-		if (this.plugin.settings.presets.length === 0) {
-			listEl.createEl("div", { text: "No presets saved yet.", attr: { style: "font-size:0.8em; color:var(--text-faint); padding:6px 4px;" } });
+		const filter = this._presetFilter || "";
+		const presets = this.plugin.settings.presets;
+
+		// Filter + score (shorter name = better match = higher priority among equal-length queries)
+		const matched = presets
+			.map(p => ({ p, ...this._fuzzyMatch(p.name, filter) }))
+			.filter(m => m.match);
+
+		if (presets.length === 0) {
+			const msg = document.createElement("div");
+			msg.style.cssText = "font-size:0.8em;color:var(--text-faint);padding:6px 4px;";
+			msg.textContent = "No presets saved yet.";
+			listEl.appendChild(msg);
 			return;
 		}
 
-		this.plugin.settings.presets.forEach((p) => {
-			const row = listEl.createDiv({ cls: "regex-preset-row" });
+		if (matched.length === 0) {
+			const msg = document.createElement("div");
+			msg.style.cssText = "font-size:0.8em;color:var(--text-faint);padding:6px 4px;";
+			msg.textContent = "No matches.";
+			listEl.appendChild(msg);
+			return;
+		}
+
+		matched.forEach(({ p, indices }) => {
+			const row = document.createElement("div");
+			row.className = "regex-preset-row" + (p.name === this.currentPresetName ? " active" : "");
 			row.dataset.name = p.name;
-			if (p.name === this.currentPresetName) row.addClass("active");
 
-			const handle = row.createEl("span", { cls: "regex-preset-handle", text: "⠿" });
+			const handle = document.createElement("span");
+			handle.className = "regex-preset-handle";
+			handle.textContent = "⠿";
+			// Dragging is only useful when not filtering
+			if (!filter) this._attachDragHandlers(handle, row, listEl);
+			else handle.style.opacity = "0.3";
+			row.appendChild(handle);
 
-			const nameEl = row.createEl("span", { cls: "regex-preset-name", text: p.name });
+			const nameEl = document.createElement("span");
+			nameEl.className = "regex-preset-name";
 			nameEl.title = p.name;
+
+			// Highlight matched characters
+			if (filter && indices.length) {
+				const indexSet = new Set(indices);
+				[...p.name].forEach((ch, i) => {
+					const span = document.createElement("span");
+					span.textContent = ch;
+					if (indexSet.has(i)) span.className = "regex-preset-match";
+					nameEl.appendChild(span);
+				});
+			} else {
+				nameEl.textContent = p.name;
+			}
+
 			nameEl.addEventListener("click", () => {
 				this.loadPreset(p);
 				this.currentPresetName = p.name;
@@ -209,8 +265,11 @@ class RegexReplaceView extends ItemView {
 				this.closePresetPopup();
 				new Notice("Loaded: " + p.name);
 			});
+			row.appendChild(nameEl);
 
-			const delBtn = row.createEl("button", { cls: "regex-preset-delete", text: "✕" });
+			const delBtn = document.createElement("button");
+			delBtn.className = "regex-preset-delete";
+			delBtn.textContent = "✕";
 			delBtn.addEventListener("click", (e) => {
 				e.stopPropagation();
 				new ConfirmModal(this.app, `Delete preset "${p.name}"? This can't be undone.`, async () => {
@@ -225,8 +284,9 @@ class RegexReplaceView extends ItemView {
 					new Notice("Deleted: " + p.name);
 				}).open();
 			});
+			row.appendChild(delBtn);
 
-			this._attachDragHandlers(handle, row, listEl);
+			listEl.appendChild(row);
 		});
 	}
 
@@ -241,6 +301,126 @@ class RegexReplaceView extends ItemView {
 		popup.className = "regex-preset-popup";
 		popup.style.display = "none";
 
+		// Inject popup styles into <head> so they reach the body-portaled element
+		// (the sidebar's own <style> tag is scoped and won't reach document.body children)
+		const existing = document.getElementById("regex-preset-popup-styles");
+		if (existing) existing.remove();
+		const s = document.createElement("style");
+		s.id = "regex-preset-popup-styles";
+			s.textContent = `
+				.regex-preset-popup {
+					box-sizing: border-box;
+					background: var(--background-primary);
+					border: 1px solid var(--background-modifier-border);
+					border-radius: 6px;
+					box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+					padding: 4px;
+				}
+				.regex-preset-search-wrap {
+					display: flex;
+					align-items: center;
+					gap: 4px;
+					padding: 4px;
+					border-bottom: 1px solid var(--background-modifier-border);
+					margin-bottom: 3px;
+					box-sizing: border-box;
+				}
+				.regex-preset-search-icon {
+					font-size: 0.85em;
+					line-height: 1;
+					flex-shrink: 0;
+				}
+				.regex-preset-search-input {
+					flex: 1;
+					border: none;
+					background: transparent;
+					outline: none;
+					font-size: 0.82em;
+					color: var(--text-normal);
+					min-width: 0;
+				}
+				.regex-preset-list {
+					display: flex;
+					flex-direction: column;
+					gap: 2px;
+					overflow-y: scroll;
+					overflow-x: hidden;
+					box-sizing: border-box;
+					width: 100%;
+				}
+				.regex-preset-match {
+					color: var(--interactive-accent);
+					font-weight: bold;
+				}
+				.regex-preset-row {
+					display: flex;
+					align-items: center;
+					gap: 4px;
+					padding: 3px 4px;
+					border-radius: 3px;
+					background: var(--background-secondary);
+					flex-shrink: 0;
+				}
+				.regex-preset-row.active {
+					border: 1px solid var(--interactive-accent);
+				}
+				.regex-preset-row.dragging {
+					opacity: 0.5;
+					background: var(--background-modifier-hover);
+				}
+				.regex-preset-handle {
+					cursor: grab;
+					color: var(--text-faint);
+					font-size: 0.9em;
+					padding: 0 4px;
+					line-height: 1;
+					touch-action: none;
+					user-select: none;
+					flex-shrink: 0;
+				}
+				.regex-preset-handle:active { cursor: grabbing; }
+				.regex-preset-name {
+					flex: 1;
+					font-size: 0.8em;
+					color: var(--text-normal);
+					cursor: pointer;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				.regex-preset-delete {
+					padding: 2px 6px;
+					font-size: 0.75em;
+					border: none;
+					border-radius: 3px;
+					background: transparent;
+					color: var(--text-faint);
+					cursor: pointer;
+					flex-shrink: 0;
+				}
+				.regex-preset-delete:hover {
+					color: var(--text-error);
+					background: var(--background-modifier-hover);
+				}
+			`;
+			document.head.appendChild(s);
+
+		// Search bar
+		const searchWrap = document.createElement("div");
+		searchWrap.className = "regex-preset-search-wrap";
+		const searchIcon = document.createElement("span");
+		searchIcon.className = "regex-preset-search-icon";
+		searchIcon.textContent = "🔍";
+		const searchInput = document.createElement("input");
+		searchInput.type = "text";
+		searchInput.placeholder = "Filter presets…";
+		searchInput.className = "regex-preset-search-input";
+		searchWrap.appendChild(searchIcon);
+		searchWrap.appendChild(searchInput);
+		popup.appendChild(searchWrap);
+
+		this.presetSearchWrapEl = searchWrap;
+
 		const listEl = document.createElement("div");
 		listEl.className = "regex-preset-list";
 		popup.appendChild(listEl);
@@ -248,6 +428,16 @@ class RegexReplaceView extends ItemView {
 
 		this.presetPopupEl = popup;
 		this.presetListEl = listEl;
+		this.presetSearchInput = searchInput;
+		this._presetFilter = "";
+
+		searchInput.addEventListener("input", () => {
+			this._presetFilter = searchInput.value;
+			this.renderPresetList();
+		});
+		// Don't let typing in the search box bubble up and trigger Obsidian hotkeys
+		searchInput.addEventListener("keydown", (e) => e.stopPropagation());
+
 		this.renderPresetList();
 
 		// Outside-click: close popup when clicking anywhere that isn't the popup or the selector btn
@@ -273,25 +463,63 @@ class RegexReplaceView extends ItemView {
 		const btn = this.presetSelectorBtn;
 		if (!popup || !btn) return;
 
-		// Position the popup just below the selector button
-		const rect = btn.getBoundingClientRect();
-		popup.style.display = "block";
-		popup.style.position = "fixed";
-		popup.style.zIndex = "9999";
-		popup.style.minWidth = Math.max(rect.width + 40, 180) + "px";
-
-		// Default: open downward
-		const spaceBelow = window.innerHeight - rect.bottom;
-		const popupH = popup.offsetHeight || 180;
-		if (spaceBelow >= popupH || spaceBelow >= 120) {
-			popup.style.top = (rect.bottom + 4) + "px";
-			popup.style.bottom = "";
-		} else {
-			// Flip upward if not enough space below
-			popup.style.bottom = (window.innerHeight - rect.top + 4) + "px";
-			popup.style.top = "";
+		// Reset search
+		if (this.presetSearchInput) {
+			this.presetSearchInput.value = "";
+			this._presetFilter = "";
+			this.renderPresetList();
 		}
-		popup.style.left = rect.left + "px";
+
+		const SEARCH_H = 32;
+
+		// Use the actual visible content panel bounds
+		const containerRect = (this._viewContainer || this.containerEl).getBoundingClientRect();
+		const rect = btn.getBoundingClientRect();
+		const topY = rect.bottom + 4;
+		const bottomY = containerRect.bottom - 4;
+		const POPUP_H = Math.max(bottomY - topY, 80);
+
+		popup.style.cssText = `
+			display: block;
+			position: fixed;
+			z-index: 9999;
+			left: ${containerRect.left}px;
+			right: ${window.innerWidth - containerRect.right}px;
+			top: ${topY}px;
+			height: ${POPUP_H}px;
+			box-sizing: border-box;
+			padding: 4px;
+			background: var(--background-primary);
+			border: 1px solid var(--background-modifier-border);
+			border-radius: 6px;
+			box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+		`;
+
+		if (this.presetSearchWrapEl) {
+			this.presetSearchWrapEl.style.cssText = `
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				height: ${SEARCH_H}px;
+				box-sizing: border-box;
+				padding: 4px;
+				border-bottom: 1px solid var(--background-modifier-border);
+				margin-bottom: 3px;
+			`;
+		}
+
+		if (this.presetListEl) {
+			this.presetListEl.style.cssText = `
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				height: ${POPUP_H - SEARCH_H - 20}px;
+				overflow-y: scroll;
+				overflow-x: hidden;
+				box-sizing: border-box;
+				width: 100%;
+			`;
+		}
 
 		document.addEventListener("pointerdown", this._popupOutsideClick, true);
 	}
@@ -312,22 +540,28 @@ class RegexReplaceView extends ItemView {
 		}
 	}
 
-	// Pointer Events (not HTML5 dragstart/dragover) so this works with mouse, touch, and pen —
-	// including Obsidian mobile. On every move we compute the row's correct slot directly from
-	// the pointer's Y position (rather than swapping one neighbor at a time), so a fast or long
-	// drag lands in the right place in a single step instead of stalling after one position.
 	_attachDragHandlers(handle, row, listEl) {
 		let dragging = false;
 		let pointerId = null;
+		let startY = 0;
+		let intentConfirmed = false;
 
 		const onPointerMove = (e) => {
 			if (!dragging || e.pointerId !== pointerId) return;
+
+			// Wait until the pointer has moved >4px vertically before locking scroll —
+			// this lets a tap or tiny wobble still scroll the list normally.
+			if (!intentConfirmed) {
+				if (Math.abs(e.clientY - startY) < 5) return;
+				intentConfirmed = true;
+				// Now we're committed to a drag: capture and prevent scroll
+				try { handle.setPointerCapture(pointerId); } catch (err) {}
+			}
+
 			e.preventDefault();
 			const y = e.clientY;
 			const siblings = Array.from(listEl.children).filter(el => el !== row);
 
-			// Find the first sibling whose vertical midpoint is below the pointer;
-			// the row belongs immediately before it. If none, it belongs at the end.
 			let target = null;
 			for (const sib of siblings) {
 				const rect = sib.getBoundingClientRect();
@@ -346,30 +580,35 @@ class RegexReplaceView extends ItemView {
 			if (!dragging) return;
 			if (e && e.pointerId !== undefined && e.pointerId !== pointerId) return;
 			dragging = false;
-			row.removeClass("dragging");
+			intentConfirmed = false;
+			row.classList.remove("dragging");
 			document.removeEventListener("pointermove", onPointerMove);
 			document.removeEventListener("pointerup", cleanup);
 			document.removeEventListener("pointercancel", cleanup);
 			handle.removeEventListener("lostpointercapture", cleanup);
 			try {
 				if (pointerId !== null) handle.releasePointerCapture(pointerId);
-			} catch (err) { /* already released */ }
-			this._persistPresetOrder(listEl);
+			} catch (err) {}
+			if (intentConfirmed !== false) this._persistPresetOrder(listEl);
+		};
+
+		const onPointerUp = (e) => {
+			const wasIntent = intentConfirmed;
+			cleanup(e);
+			if (wasIntent) this._persistPresetOrder(listEl);
 		};
 
 		handle.addEventListener("pointerdown", (e) => {
 			if (dragging) return;
-			e.preventDefault();
+			e.preventDefault(); // prevent text selection on the handle itself
 			dragging = true;
+			intentConfirmed = false;
 			pointerId = e.pointerId;
-			row.addClass("dragging");
-			try {
-				handle.setPointerCapture(pointerId);
-			} catch (err) { /* not supported; document-level listeners still cover the drag */ }
-			// Listening on document (not just the handle) means the drag keeps working even if
-			// pointer capture is dropped mid-gesture on some mobile browsers.
+			startY = e.clientY;
+			row.classList.add("dragging");
+			// Don't setPointerCapture yet — wait for intent confirmation in onPointerMove
 			document.addEventListener("pointermove", onPointerMove);
-			document.addEventListener("pointerup", cleanup);
+			document.addEventListener("pointerup", onPointerUp);
 			document.addEventListener("pointercancel", cleanup);
 			handle.addEventListener("lostpointercapture", cleanup);
 		});
@@ -688,6 +927,7 @@ class RegexReplaceView extends ItemView {
 
 	async onOpen() {
 		const container = this.containerEl.children[1];
+		this._viewContainer = container;
 		container.empty();
 		container.addClass("regex-replace-sidebar");
 		
@@ -813,18 +1053,6 @@ class RegexReplaceView extends ItemView {
 					background: var(--background-secondary);
 					cursor: pointer;
 				}
-				.regex-preset-popup {
-					position: fixed;
-					z-index: 9999;
-					background: var(--background-primary);
-					border: 1px solid var(--background-modifier-border);
-					border-radius: 6px;
-					box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-					padding: 4px;
-					min-width: 180px;
-					max-height: 220px;
-					overflow-y: auto;
-				}
 				.regex-preset-selector-btn {
 					flex: 1;
 					padding: 4px 8px;
@@ -841,57 +1069,7 @@ class RegexReplaceView extends ItemView {
 				.regex-preset-selector-btn:hover {
 					background: var(--background-modifier-hover);
 				}
-				.regex-preset-row {
-					display: flex;
-					align-items: center;
-					gap: 4px;
-					padding: 3px 4px;
-					border-radius: 3px;
-					background: var(--background-secondary);
-					touch-action: none;
-				}
-				.regex-preset-row.active {
-					border: 1px solid var(--interactive-accent);
-				}
-				.regex-preset-row.dragging {
-					opacity: 0.5;
-					background: var(--background-modifier-hover);
-				}
-				.regex-preset-handle {
-					cursor: grab;
-					color: var(--text-faint);
-					font-size: 0.9em;
-					padding: 0 4px;
-					line-height: 1;
-					touch-action: none;
-					user-select: none;
-				}
-				.regex-preset-handle:active {
-					cursor: grabbing;
-				}
-				.regex-preset-name {
-					flex: 1;
-					font-size: 0.8em;
-					color: var(--text-normal);
-					cursor: pointer;
-					white-space: nowrap;
-					overflow: hidden;
-					text-overflow: ellipsis;
-				}
-				.regex-preset-delete {
-					padding: 2px 6px;
-					font-size: 0.75em;
-					border: none;
-					border-radius: 3px;
-					background: transparent;
-					color: var(--text-faint);
-					cursor: pointer;
-				}
-				.regex-preset-delete:hover {
-					color: var(--text-error);
-					background: var(--background-modifier-hover);
-				}
-			`
+				`
 		});
 
 		const controlsDiv = container.createDiv("regex-compact-controls");
