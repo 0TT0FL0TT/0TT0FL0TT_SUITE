@@ -549,12 +549,9 @@ class RegexReplaceView extends ItemView {
 		const onPointerMove = (e) => {
 			if (!dragging || e.pointerId !== pointerId) return;
 
-			// Wait until the pointer has moved >4px vertically before locking scroll —
-			// this lets a tap or tiny wobble still scroll the list normally.
 			if (!intentConfirmed) {
 				if (Math.abs(e.clientY - startY) < 5) return;
 				intentConfirmed = true;
-				// Now we're committed to a drag: capture and prevent scroll
 				try { handle.setPointerCapture(pointerId); } catch (err) {}
 			}
 
@@ -565,8 +562,7 @@ class RegexReplaceView extends ItemView {
 			let target = null;
 			for (const sib of siblings) {
 				const rect = sib.getBoundingClientRect();
-				const mid = rect.top + rect.height / 2;
-				if (y < mid) { target = sib; break; }
+				if (y < rect.top + rect.height / 2) { target = sib; break; }
 			}
 
 			if (target) {
@@ -576,41 +572,34 @@ class RegexReplaceView extends ItemView {
 			}
 		};
 
-		const cleanup = (e) => {
-			if (!dragging) return;
-			if (e && e.pointerId !== undefined && e.pointerId !== pointerId) return;
+		const onPointerUp = (e) => {
+			if (!dragging || e.pointerId !== pointerId) return;
+			const didDrag = intentConfirmed;
+
+			// Reset state before any DOM/save work
 			dragging = false;
 			intentConfirmed = false;
 			row.classList.remove("dragging");
-			document.removeEventListener("pointermove", onPointerMove);
-			document.removeEventListener("pointerup", cleanup);
-			document.removeEventListener("pointercancel", cleanup);
-			handle.removeEventListener("lostpointercapture", cleanup);
-			try {
-				if (pointerId !== null) handle.releasePointerCapture(pointerId);
-			} catch (err) {}
-			if (intentConfirmed !== false) this._persistPresetOrder(listEl);
-		};
+			try { handle.releasePointerCapture(pointerId); } catch (err) {}
 
-		const onPointerUp = (e) => {
-			const wasIntent = intentConfirmed;
-			cleanup(e);
-			if (wasIntent) this._persistPresetOrder(listEl);
+			document.removeEventListener("pointermove", onPointerMove);
+			document.removeEventListener("pointerup", onPointerUp);
+			document.removeEventListener("pointercancel", onPointerUp);
+
+			if (didDrag) this._persistPresetOrder(listEl);
 		};
 
 		handle.addEventListener("pointerdown", (e) => {
 			if (dragging) return;
-			e.preventDefault(); // prevent text selection on the handle itself
+			e.preventDefault();
 			dragging = true;
 			intentConfirmed = false;
 			pointerId = e.pointerId;
 			startY = e.clientY;
 			row.classList.add("dragging");
-			// Don't setPointerCapture yet — wait for intent confirmation in onPointerMove
 			document.addEventListener("pointermove", onPointerMove);
 			document.addEventListener("pointerup", onPointerUp);
-			document.addEventListener("pointercancel", cleanup);
-			handle.addEventListener("lostpointercapture", cleanup);
+			document.addEventListener("pointercancel", onPointerUp);
 		});
 	}
 
