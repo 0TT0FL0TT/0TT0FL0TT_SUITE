@@ -4,7 +4,7 @@
   "version": "4.0.1",
   "minAppVersion": "0.15.0",
   "description": "Regex-Replacer sidebar plugin with reorder and fuzzy filter support, originally by Frank Wisniewski",
-  "author": "zanodor",
+  "author": "Otto Flott",
   "authorUrl": "https://github.com/0TT0FL0TT",
   "fundingUrl": "",
   "isDesktopOnly": false
