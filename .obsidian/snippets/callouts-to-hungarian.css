@@ -1,5 +1,11 @@
 /* Now applies globally: Hungarian callout titles for all Obsidian callout types */
 
+/*** Callout spacing fix - padding after title before content ***/
+.callout-title {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
 /* Flexbox layout for callout headers */
 .callout-title {
   display: flex;
@@ -21,7 +27,7 @@
 .callout[data-callout="important"] .callout-title-inner::before { content: "Fontos "; }
 
 .callout[data-callout="fail"] .callout-title-inner strong { display: none; }
-.callout[data-callout="fail"] .callout-title-inner::before { content: "Figyelem "; }
+.callout[data-callout="fail"] .callout-title-inner::before { content: "Tévedés "; }
 
 .callout[data-callout="note"] .callout-title-inner strong { display: none; }
 .callout[data-callout="note"] .callout-title-inner::before { content: "Jegyzet "; }
