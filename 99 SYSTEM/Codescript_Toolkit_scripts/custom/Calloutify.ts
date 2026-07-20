@@ -1,8 +1,5 @@
 import * as obsidian from 'obsidian';
 
-// Original Templater script by Sascha D. Kasper AKA LeanProductivity
-// This script is now taking into consideration our changes made to callouts-to-hungarian.css
-
 const CALLOUT_TYPES = [
     "_for_blockid", "noicon", "custom", "abstract", "attention", "bug", "caution", "check", "cite", 
     "danger", "done", "error", "example", "fail", "failure", 
@@ -23,7 +20,7 @@ const HUNGARIAN_TRANSLATIONS: Record<string, string> = {
     "done": "Kész",
     "error": "Hiba",
     "example": "Példa",
-    "fail": "Figyelem",
+    "fail": "Tévedés",
     "failure": "Sikertelen",
     "faq": "GYIK",
     "file": "Fájl",
@@ -173,6 +170,70 @@ class InputModal extends obsidian.Modal {
     }
 }
 
+/**
+ * Counts the number of leading "> " groups in a line.
+ * e.g. "> > foo" -> 2, "> foo" -> 1, "foo" -> 0
+ */
+const countBlockquoteDepth = (line: string): number => {
+    const m = line.match(/^((?:> )*)/);
+    return m ? (m[1].match(/> /g) ?? []).length : 0;
+};
+
+/**
+ * Detects the nesting depth for a new callout.
+ *
+ * If there is a selection, the first selected line already sits inside a callout
+ * at some depth — we inherit that same depth for the new header.
+ *
+ * If there is no selection, scan lines above the cursor backwards until a callout
+ * header line ([!...]) is found and return its depth + 1.
+ */
+const detectNestingDepth = (editor: obsidian.Editor, hasSelection: boolean): number => {
+    const fromLine = editor.getCursor('from').line;
+
+    // Scan upward from the start of the selection (or cursor) for a parent callout header.
+    const scanForParentDepth = (startLine: number): number | null => {
+        for (let i = startLine - 1; i >= 0; i--) {
+            const line = editor.getLine(i);
+            if (line.match(/^((?:> )*)\[!.*?\]/)) {
+                return countBlockquoteDepth(line);
+            }
+            if (!line.startsWith('>')) break;
+        }
+        return null;
+    };
+
+    if (hasSelection) {
+        const firstSelectedLine = editor.getLine(fromLine);
+        const selectionDepth = countBlockquoteDepth(firstSelectedLine);
+        const parentDepth = scanForParentDepth(fromLine);
+
+        if (parentDepth !== null && parentDepth === selectionDepth) {
+            // Selection is a sibling of content inside the parent callout →
+            // new header belongs at the same depth as the parent header.
+            return selectionDepth;
+        } else {
+            // No parent at same level → new header sits one level above the selection.
+            return selectionDepth > 0 ? selectionDepth - 1 : 0;
+        }
+    }
+
+    // No selection: new callout goes at parent's depth (nestPrefix + "> " adds one level).
+    const parentDepth = scanForParentDepth(fromLine);
+    return parentDepth !== null ? parentDepth : 0;
+};
+
+/**
+ * Adds one blockquote level ("> ") to every line, preserving relative depth.
+ * "> foo" becomes "> > foo", plain "foo" becomes "> foo", empty "" becomes "> ".
+ */
+const addBlockquoteLevel = (text: string): string => {
+    return text
+        .split('\n')
+        .map(line => `> ${line}`)
+        .join('\n');
+};
+
 const insertCallout = async (app: obsidian.App): Promise<void> => {
     const activeEditor = app.workspace.activeEditor;
     const editor = activeEditor?.editor;
@@ -200,12 +261,29 @@ const insertCallout = async (app: obsidian.App): Promise<void> => {
         calloutType = customLabel;
     }
 
-    // Get fold state
-    const foldModal = new OptionModal(app, FOLD_STATES.map(f => f.label));
-    foldModal.setPlaceholder("Folding state of callout?");
-    const foldLabel = await foldModal.openAndGetValue();
-    if (!foldLabel) return;
-    const foldState = FOLD_STATES.find(f => f.label === foldLabel)?.value ?? "";
+    // Get fold state — default to collapsed for "details" callout
+    let foldState: string;
+    if (calloutType === "details") {
+        const foldModal = new OptionModal(app, FOLD_STATES.map(f => f.label));
+        foldModal.setPlaceholder("Folding state of callout? (default: Collapsed)");
+        // Reorder so Default Collapsed appears first for quick Enter confirm
+        const detailsFoldOptions = [
+            "Default Collapsed",
+            "Default Expanded",
+            "Not Foldable"
+        ];
+        const detailsFoldModal = new OptionModal(app, detailsFoldOptions);
+        detailsFoldModal.setPlaceholder("Folding state of callout? (default: Collapsed)");
+        const foldLabel = await detailsFoldModal.openAndGetValue();
+        if (!foldLabel) return;
+        foldState = FOLD_STATES.find(f => f.label === foldLabel)?.value ?? "-";
+    } else {
+        const foldModal = new OptionModal(app, FOLD_STATES.map(f => f.label));
+        foldModal.setPlaceholder("Folding state of callout?");
+        const foldLabel = await foldModal.openAndGetValue();
+        if (!foldLabel) return;
+        foldState = FOLD_STATES.find(f => f.label === foldLabel)?.value ?? "";
+    }
 
     // Get title with existing InputModal
     const titleModal = new InputModal(app, "Optional Title Text");
@@ -223,36 +301,35 @@ const insertCallout = async (app: obsidian.App): Promise<void> => {
         title = `<span style=\"font-weight:normal\">${titleInput}</span>`;
     }
 
-    // Get or use selection as content
-    let content = selection;
-    if (!content) {
-        const contentModal = new InputModal(app, "Optional Content Text (Ctrl+Enter or Done when finished)", true);
-        content = await contentModal.getValue() ?? "";
-    }
-
-    // Trim content to remove any trailing newlines
-    content = content.trim();
+    // Detect nesting depth from parent callout headers above the cursor
+    const nestDepth = detectNestingDepth(editor, !!selection);
+    // Build the prefix string: "" for depth 0, "> " for depth 1, "> > " for depth 2, etc.
+    const nestPrefix = nestDepth > 0 ? Array(nestDepth).fill('> ').join('') : '';
 
     // Add n-dash only if there is a real title (not just nbsp)
     const dash = !isNoTitle ? " " : "";
+
+    // Build header line
+    const headerType = calloutType === "noicon" ? "[!|noicon]" : `[!${calloutType}]`;
+    const calloutHeader = `${nestPrefix}> ${headerType}${foldState}${dash}${title}`;
+
     let formattedCallout: string;
-    if (content) {
-        let calloutHeader: string;
-        if (calloutType === "noicon") {
-            calloutHeader = `> [!|noicon]${foldState}${dash}${title}`;
-        } else {
-            calloutHeader = `> [!${calloutType}]${foldState}${dash}${title}`;
-        }
-        const calloutBody = content
-            .split('\n')
-            .map(line => `> ${line}`)
-            .join('\n');
+    if (selection) {
+        // Selection case: addBlockquoteLevel already added one "> " to every line,
+        // preserving relative depth. The header uses nestPrefix (same base depth).
+        const calloutBody = addBlockquoteLevel(selection).trim();
         formattedCallout = `${calloutHeader}\n${calloutBody}`;
     } else {
-        if (calloutType === "noicon") {
-            formattedCallout = `> [!|noicon]${foldState}${dash}${title}`;
+        // No selection: prompt for content, then prefix each line with nestPrefix + "> "
+        const rawContent = (await (new InputModal(app, "Optional Content Text (Ctrl+Enter or Done when finished)", true)).getValue() ?? "").trim();
+        if (rawContent) {
+            const calloutBody = rawContent
+                .split('\n')
+                .map(line => `${nestPrefix}> ${line}`)
+                .join('\n');
+            formattedCallout = `${calloutHeader}\n${calloutBody}`;
         } else {
-            formattedCallout = `> [!${calloutType}]${foldState}${dash}${title}`;
+            formattedCallout = calloutHeader;
         }
     }
 

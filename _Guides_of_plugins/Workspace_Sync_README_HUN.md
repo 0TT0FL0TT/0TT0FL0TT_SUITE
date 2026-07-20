@@ -119,6 +119,26 @@ keret-fájl útvonalat beállítottad, lásd fent).
 
 ## Korlátozás
 
+### Fájlátnevezés a fő tab-csoportban (main)
+
+Ha egy olyan jegyzetet nevezel át, amely egy mentett workspace fő
+tab-csoportjában van megnyitva, a plugin automatikusan átírja az új
+fájlnevet mindhárom érintett fájlban — `workspaces.pc.json`,
+`workspaces.mobile.json`, és a natív `workspaces.json` — abban a
+pillanatban, ahogy Obsidian jelzi az átnevezést. Nincs szükség
+manuális beavatkozásra.
+
+**A sidebar-ban megnyitott fájlokat a plugin nem figyeli.** Ha egy
+bal vagy jobb oldali sidebar-panelben rögzített fájlt nevezel át, a
+plugin nem patcheli át. A sidebar-elrendezés az importált
+framework-fájlból érkezik, nem az élő workspace-állapotból — tehát ha
+egy sidebar-ba kitűzött fájlt átneveztek, a frameworköt kell
+frissíteni: rendezd el újra a sidebar-t a kívánt állapotba, majd
+importáld újra a **"Pick file (desktop)"** / **"Pick file (mobile)"**
+gombokkal a Settings fülön.
+
+### Workspace-mentések és szerkezeti változások
+
 Mivel nincs event listener, ami session közben figyelné a
 változásokat, minden módosítást — workspace mentése, új létrehozása,
 törlése — csak az időszakos újraépítés vesz észre (alapértelmezetten

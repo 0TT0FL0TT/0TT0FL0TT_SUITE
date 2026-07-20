@@ -112,6 +112,23 @@ the shared framework file path, see above).
 
 ## Limitation
 
+### File renames in the main tab group
+
+When you rename a note that is open in the main tab group of a saved
+workspace, the plugin automatically patches the new filename into all
+three relevant files — `workspaces.pc.json`, `workspaces.mobile.json`,
+and the native `workspaces.json` — the moment Obsidian fires the rename
+event. No manual action is needed.
+
+**Sidebar files are not tracked.** If a note open in the left or right
+sidebar panel is renamed, the plugin does not patch it. The sidebar
+layout comes from your imported framework file, not from the live
+workspace state — so if a sidebar-pinned file is renamed, you need to
+update your framework: re-arrange the sidebar as desired, then re-import
+it with **"Pick file (desktop)"** / **"Pick file (mobile)"** in Settings.
+
+### Workspace saves and structural changes
+
 Since there's no event listener watching for changes during a session,
 every change — saving a workspace, adding a new one, deleting one — is
 only picked up by the periodic rebuild (every 30 seconds by default).
