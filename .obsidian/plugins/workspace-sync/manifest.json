@@ -1,7 +1,7 @@
 {
   "id": "workspace-sync",
   "name": "Workspace Sync",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "minAppVersion": "1.0.0",
   "description": "Syncs workspace main tab group tabs. Each workspace's sidebars (left, right) plus ribbon are kept via single platform-specific template (desktop vs. mobile), while leaving the main tab area untouched. Excluded workspaces keep their own custom sidebar.",
   "author": "Otto Flott",
