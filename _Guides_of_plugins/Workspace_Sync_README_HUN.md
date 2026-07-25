@@ -95,7 +95,7 @@ bármelyik más fájlt.
 ### Keret importálása
 
 Minden, ami egy workspace-ben van, a megnyitott tab-okat kivéve — a
-bal/jobb oldali sidebar-ok és a ribbon — az a "framework" (keret". Ezt
+bal/jobb oldali sidebar-ok és a ribbon — az a "framework" (keret). Ezt
 egy, a vault-odban már létező fájlból választod ki, platformonként
 egyet:
 
@@ -136,6 +136,12 @@ egy sidebar-ba kitűzött fájlt átneveztek, a frameworköt kell
 frissíteni: rendezd el újra a sidebar-t a kívánt állapotba, majd
 importáld újra a **"Pick file (desktop)"** / **"Pick file (mobile)"**
 gombokkal a Settings fülön.
+
+### Split tab-csoportok és mobil szinkronizálás
+
+A split tab-csoport elrendezések (Split right, Split down) mind a desktop, mind a tablet snapshot-ban megmaradnak — a teljes split struktúra érintetlenül kerül be a `workspaces.pc.json`-ba és a `workspaces.mobile.json`-ba egyaránt. A tablet natívan támogatja a split view-t az Obsidianban, ezért nem történik flatten.
+
+**Csak telefonon:** az Obsidian mobil app telefonokon nem támogatja a split tab-csoportokat a fő területen. Ha egy workspace-t telefonon mentesz, a natív `workspaces.json`-ban az a workspace flat tab-sorként szerepel. Amikor a plugin ebből a fájlból építi újra a snapshot-okat, a split struktúra elvész arra a workspace-re. A split-ek megőrzéséhez desktopon vagy tableten mentsd a workspace-t, ne telefonon.
 
 ### Workspace-mentések és szerkezeti változások
 
@@ -240,3 +246,30 @@ npm run build    # type-check + production build
 Másold a `main.js` és `manifest.json` fájlokat a vault-od
 `.obsidian/plugins/workspace-sync/` mappájába (vagy a saját config
 mappád megfelelő helyére).
+
+---
+
+## Workspace-specifikus kurzor pozíció memória
+
+A plugin megjegyzi és visszaállítja a scroll pozíciót és a szövegkurzort azokban a markdown fájlokban, amiket egy workspace-ben megnyitsz. Ha hetekkel később visszatérsz egy workspace-be, a fájlok pontosan azon a soron nyílnak meg, ahol legutóbb jártál — nem a tetején.
+
+### Hogyan működik
+
+- **Mentés:** a plugin reaktív módon rögzíti az éppen aktív (fókuszált) tab pozícióját — scroll eseményekre és minden tab-váltáskor — polling helyett. Ez elkerüli a korábbi polling-alapú implementációk CPU-terhelését és görgetési akadozását. Workspace-váltáskor az aktuális workspace összes felhalmozott pozícióját kiírja a `.workspace-sync/scroll-positions.json` fájlba (ugyanabba a megosztott mappába, ahol a `workspaces.pc.json` és `workspaces.mobile.json` is él), workspace neve és **leaf ID** szerint rendezve.
+- **Visszaállítás:** amikor egy fájl megnyílik (`file-open` esemény), vagy két tab között váltasz (`active-leaf-change` esemény), a plugin a leaf saját ID-ja alapján keresi meg a mentett pozíciót. Ha talál ilyet, rövid várakozás után visszaállítja mind a scroll pozíciót, mind a kurzort — ugyanazt a mechanizmust (`setEphemeralState`) használva, amelyet maga az Obsidian is használ belül.
+- **Hatókör:** a pozíciók workspace-enként vannak tárolva. Ugyanaz a fájl, ha két különböző workspace-ben van megnyitva, két független mentett pozícióval rendelkezhet.
+- **Duplikált tab-ok:** ha ugyanaz a fájl egyszerre két tabban is meg van nyitva, mindkét tab önállóan tárolja a saját scroll pozícióját és kurzorát. Az Obsidian minden tabhoz stabil belső ID-t rendel (ez látható a `workspaces.json`-ban is); a plugin ezeket az ID-kat használja tárolási kulcsként, tehát ha két tab között váltasz, amelyek ugyanazt a fájlt mutatják, mindkét tab a saját utolsó pozícióját kapja vissza — nem az egyik tab pozícióját alkalmazza a másikra.
+- **Elavult bejegyzések törlése:** ha egy fájlt kivesznek egy workspace-ből és a workspace el van mentve, a pozíció bejegyzése automatikusan törlődik a `scroll-positions.json`-ból a következő workspace-váltáskor. Ez megakadályozza, hogy egy elavult workspace-pozíció felülírja egy kurzor-követő plugin globális pozícióját, amikor a fájlt a saját workspace-én kívül nyitják meg.
+
+### Mi kerül mentésre és mi nem
+
+- **Csak azok a fájlok kerülnek mentésre, amiket ténylegesen megnyitsz.** Ha egy workspace-nek öt tabja van, és egy session alatt csak háromra kattintasz rá, csak azok háromnak a pozíciója mentődik. A másik kettőhöz a plugin nem nyúl — ha volt korábban elmentett pozíciójuk, az megmarad; ha nem volt, a fájl azon a pozíción nyílik meg, ahová az Obsidian helyezi (jellemzően a tetején).
+- **Csak markdown fájlok kerülnek mentésre.** A sidebar panelek, web viewer tabok, PDF tabok és canvas tabok nem tartoznak ide.
+
+### Együttműködés kurzor-követő pluginokkal
+
+Ha a [Remember Cursor Position](https://github.com/dy-sh/obsidian-remember-cursor-position) plugint vagy annak forkját, a [Cursor Navigator](https://github.com/MaleleStudySpace/cursor-navigator)-t is használod ezzel párhuzamosan, mindkettő ugyanarra a `file-open` eseményre hallgat, és mindkettő `setEphemeralState`-et hív. Amelyik utoljára fut le, az érvényesül. Ez a plugin szándékosan **400 ms** késleltetéssel állítja vissza a pozíciót — ez hosszabb, mint a Remember Cursor Position maximálisan beállítható 300 ms-es késleltetése — ezért ez a plugin workspace-specifikus pozíciója mindig felülírja a kurzor-követő plugin által beállítottat, azoknál a fájloknál, amelyek egy mentett workspace-ben szerepelnek.
+
+Azoknál a fájloknál, amelyekhez nincs workspace-ben mentett pozíció, ez a plugin nem csinál semmit megnyitáskor, és a kurzor-követő plugin szabadon érvényesíti a saját globális pozícióját.
+
+Nem kell eltávolítani egyik plugint sem ahhoz, hogy ez helyesen működjön. A pluginok zavartalanul megférnek egymás mellett: a workspace-fájlokra e plugin pozíciója érvényes, minden másra a kurzor-követő plugin-é.

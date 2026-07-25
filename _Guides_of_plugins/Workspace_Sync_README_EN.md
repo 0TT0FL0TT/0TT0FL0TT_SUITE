@@ -127,6 +127,12 @@ workspace state — so if a sidebar-pinned file is renamed, you need to
 update your framework: re-arrange the sidebar as desired, then re-import
 it with **"Pick file (desktop)"** / **"Pick file (mobile)"** in Settings.
 
+### Split tab groups and mobile sync
+
+Split tab group layouts (Split right, Split down) are preserved in both the desktop and tablet snapshots — the full split structure is kept intact in both `workspaces.pc.json` and `workspaces.mobile.json`. Tablets support split view natively in Obsidian, so no flattening is applied.
+
+**Phone only:** the Obsidian mobile app on phones does not support split tab groups in the main area. If you save a workspace on a phone, the native `workspaces.json` will contain a flat tab row for that workspace. When the plugin rebuilds the snapshots from that file, the split structure will be lost for that workspace. To preserve splits, save the workspace from desktop or tablet, not from a phone.
+
 ### Workspace saves and structural changes
 
 Since there's no event listener watching for changes during a session,
@@ -223,3 +229,30 @@ npm run build    # type-check + production build
 Copy `main.js` and `manifest.json` into your vault's
 `.obsidian/plugins/workspace-sync/` folder (or the equivalent location
 inside your own config folder).
+
+---
+
+## Workspace-scoped cursor position memory
+
+The plugin remembers and restores the scroll position and text cursor for markdown files you open within a workspace. When you return to a workspace — even weeks later — files reopen at the exact line you were on, not at the top.
+
+### How it works
+
+- **Saving:** the plugin captures the active (focused) tab's position reactively — on scroll events and on every tab switch — rather than polling. This avoids the CPU overhead and scrolling lag that affected earlier polling-based implementations. When you switch to another workspace, all accumulated positions for the current workspace are written to `.workspace-sync/scroll-positions.json` (the same shared folder as `workspaces.pc.json` and `workspaces.mobile.json`), keyed by workspace name and **leaf ID**.
+- **Restoring:** when a file is opened (`file-open` event) or you switch between tabs (`active-leaf-change` event), the plugin looks up the saved position by the leaf's own ID. If a saved position exists, it waits briefly and then restores both the scroll position and the cursor — using the same mechanism (`setEphemeralState`) that Obsidian itself uses internally.
+- **Scope:** positions are tracked per workspace. The same file open in two different workspaces can have two independent saved positions.
+- **Duplicate tabs:** if the same file is open in two tabs simultaneously, each tab remembers its own scroll position and cursor independently. Obsidian assigns each tab a stable internal ID (visible in `workspaces.json`); the plugin uses these IDs as storage keys, so switching between two tabs of the same file correctly restores each tab's own last position rather than applying one tab's position to the other.
+- **Stale entry cleanup:** if a file is removed from a workspace and the workspace is saved, its position entry is automatically removed from `scroll-positions.json` on the next workspace switch. This prevents a stale workspace position from overriding the global cursor position of a cursor-tracking plugin when that file is opened outside of its original workspace.
+
+### What is and isn't tracked
+
+- **Only files you actually open are tracked.** If a workspace has five tabs and you only click on three of them during a session, only those three get their positions saved. The other two are not touched — if they had a previously saved position, that is preserved; if not, they will open at whatever position Obsidian places them (typically the top).
+- **Only markdown files are tracked.** Sidebar panels, web viewer tabs, PDF tabs, and canvas tabs are not included.
+
+### Interaction with cursor-tracking plugins
+
+If you use [Remember Cursor Position](https://github.com/dy-sh/obsidian-remember-cursor-position) or its fork [Cursor Navigator](https://github.com/MaleleStudySpace/cursor-navigator) alongside this plugin, both listen to the same `file-open` event and both call `setEphemeralState`. Whichever runs last wins. This plugin intentionally delays its restore by **400 ms** — longer than Remember Cursor Position's maximum configurable delay of 300 ms — so this plugin's workspace-scoped position always takes precedence for files that belong to a saved workspace.
+
+For files that have no saved workspace position, this plugin does nothing on open, leaving the cursor-tracking plugin free to apply its own global position as usual.
+
+You do not need to uninstall either plugin for this to work correctly. The plugins coexist without interference: workspace files get this plugin's position, everything else gets the cursor-tracking plugin's.
