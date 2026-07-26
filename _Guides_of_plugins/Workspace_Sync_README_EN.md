@@ -242,7 +242,7 @@ The plugin remembers and restores the scroll position and text cursor for markdo
 - **Restoring:** when a file is opened (`file-open` event) or you switch between tabs (`active-leaf-change` event), the plugin looks up the saved position by the leaf's own ID. If a saved position exists, it waits briefly and then restores both the scroll position and the cursor — using the same mechanism (`setEphemeralState`) that Obsidian itself uses internally.
 - **Scope:** positions are tracked per workspace. The same file open in two different workspaces can have two independent saved positions.
 - **Duplicate tabs:** if the same file is open in two tabs simultaneously, each tab remembers its own scroll position and cursor independently. Obsidian assigns each tab a stable internal ID (visible in `workspaces.json`); the plugin uses these IDs as storage keys, so switching between two tabs of the same file correctly restores each tab's own last position rather than applying one tab's position to the other.
-- **Stale entry cleanup:** if a file is removed from a workspace and the workspace is saved, its position entry is automatically removed from `scroll-positions.json` on the next workspace switch. This prevents a stale workspace position from overriding the global cursor position of a cursor-tracking plugin when that file is opened outside of its original workspace.
+- **Stale entry cleanup:** if a tab is removed from a workspace, its position entry is automatically cleaned up — no manual action needed. Unsaved tabs (opened but not committed with "Save workspace") are also removed: they are never written to `scroll-positions.json` in the first place.
 
 ### What is and isn't tracked
 
@@ -253,6 +253,6 @@ The plugin remembers and restores the scroll position and text cursor for markdo
 
 If you use [Remember Cursor Position](https://github.com/dy-sh/obsidian-remember-cursor-position) or its fork [Cursor Navigator](https://github.com/MaleleStudySpace/cursor-navigator) alongside this plugin, both listen to the same `file-open` event and both call `setEphemeralState`. Whichever runs last wins. This plugin intentionally delays its restore by **400 ms** — longer than Remember Cursor Position's maximum configurable delay of 300 ms — so this plugin's workspace-scoped position always takes precedence for files that belong to a saved workspace.
 
-For files that have no saved workspace position, this plugin does nothing on open, leaving the cursor-tracking plugin free to apply its own global position as usual.
+**In practice, if you use workspaces at all, this plugin's position will almost always win.** In Obsidian there is no state outside of a workspace — you are always in one. This means Remember Cursor Position / Cursor Navigator effectively only acts as a fallback in the rare case where you have zero saved workspaces, or when opening a file that has never been part of any saved workspace.
 
-You do not need to uninstall either plugin for this to work correctly. The plugins coexist without interference: workspace files get this plugin's position, everything else gets the cursor-tracking plugin's.
+You do not need to uninstall either plugin. They coexist without conflict — but if you use workspaces consistently, the cursor-tracking plugin becomes largely redundant and can safely be disabled.
