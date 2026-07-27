@@ -7,6 +7,8 @@ desktopon, `mobile-drawer` mobilon). A megnyitott tab-okhoz a plugin
 sosem nyúl — ezek mindig szinkronban maradnak a platformok között,
 beleértve az újonnan létrehozott vagy törölt workspace-eket is.
 
+**Nincs mobilod? A plugin akkor is hasznos.** A workspace-specifikus kurzor- és scroll pozíció memória teljesen önállóan működik — framework importálás, mobilszinkron és második platform nélkül is. Az Obsidian saját pozíció memóriája csak az aktuális sessionre terjed — újraindítás után elveszik. Ez a plugin *workspace-enként* tárolja a pozíciót sessionök és újraindítások között: ugyanaz a fájl különböző workspace-ekből betöltve különböző soron nyílik meg, és megmarad amíg a tab-et vagy magát a munkaterületet nem törlöd.
+
 ---
 
 ## Hogyan működik (minden beállításnál ugyanaz a mechanizmus)

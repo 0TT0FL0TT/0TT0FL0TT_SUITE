@@ -6,6 +6,8 @@ despite the sidebar structures being incompatible between the two
 left untouched — and stay in sync across platforms, including newly
 added or deleted workspaces.
 
+**No mobile? The plugin is still useful.** The workspace-scoped cursor and scroll position memory works entirely on its own — no framework import, no mobile sync, no second platform needed. Obsidian's own position memory lasts only for the current session — restarting Obsidian resets it. This plugin persists the position *per workspace* across sessions and restarts: the same file opens at a different line depending on which workspace you load it from, and it stays there until you delete the the tab or the workspace itself.
+
 ---
 
 ## How it works (same mechanism for every setup)
