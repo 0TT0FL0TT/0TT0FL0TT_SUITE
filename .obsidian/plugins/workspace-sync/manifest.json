@@ -1,7 +1,7 @@
 {
   "id": "workspace-sync",
   "name": "Workspace Sync",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "minAppVersion": "1.0.0",
   "description": "Syncs workspace main tab group tabs with cursor positions by lead ID (meaning you can have multiple positions saved for the same md file if you have multiple instances of the same md file in the workspace). Each workspace's sidebars (left, right) plus ribbon are kept via single platform-specific template (desktop or mobile). Excluded workspaces keep their own custom sidebar.",
   "author": "Otto Flott",
