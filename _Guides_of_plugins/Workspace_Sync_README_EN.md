@@ -216,7 +216,33 @@ unfamiliar commands.
 |---|---|
 | Sync now | Forces an immediate rebuild of both snapshot files. Identical to, and named after, the "Sync now" button in Settings — just also reachable from the Command Palette. |
 | Reload frameworks from shared file | Re-reads the shared frameworks.json, without restarting Obsidian. |
+| Search Workspace Tab Content | Opens a search input for the markdown tabs currently open in the active workspace. See below. |
 | [Debug] Reload core Workspaces registry | Manually re-applies the last-loaded snapshot into Obsidian's core Workspaces registry, without restarting. For troubleshooting only — has no Settings UI equivalent. |
+
+---
+
+## Search Workspace Tab Content
+
+The **Search Workspace Tab Content** command lets you run a full-text search scoped to the files currently open as tabs in the active workspace — without manually listing them.
+
+### How it works
+
+1. When you run the command, the plugin collects every markdown tab open in the active workspace. Deferred (dormant) tabs are loaded first to make sure their file paths are readable.
+2. A small input modal opens. Type a search term — plain text or a regex expression. Use `|` to search for multiple terms at once (e.g. `\bwork\b|project|opera`). Press **Enter** to confirm, or **Escape** to cancel.
+3. Obsidian's built-in Search panel opens with a pre-built query that limits results to the collected files and matches your term. The query is also copied to the clipboard so you can paste or edit it further.
+
+If there are no markdown tabs open in the current workspace, a notice is shown and no search is triggered.
+
+### What this is useful for
+
+A saved workspace is often a focused context — a project, a research topic, a writing session. The search command lets you grep across exactly that context without having to know the file names or set up a folder-based search filter manually. It complements the workspace's tab-sync feature: the same set of files you've curated as open tabs is also the scope of the search.
+
+### Notes
+
+- Only the **root-level** tabs (the main tab group and its splits) are included in the scope. Sidebar panels are not.
+- Only **markdown files** are included. Canvas, PDF, and web viewer tabs are ignored.
+- The search query uses a `file:` regex filter combined with a regex match on content. If your search term contains forward slashes (`/`), they are escaped automatically.
+- The query is passed to Obsidian via a `obsidian://search?query=...` URI, which opens or focuses the Search core plugin.
 
 ---
 

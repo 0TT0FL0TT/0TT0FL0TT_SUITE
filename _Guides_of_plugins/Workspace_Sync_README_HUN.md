@@ -233,7 +233,33 @@ bele egy csomó számára ismeretlen parancsba.
 |---|---|
 | Sync now | Azonnal újraépíti mindkét snapshot-fájlt. Megegyezik a Settings-ben lévő "Sync now" gombbal — ugyanaz a név, ugyanaz a művelet, csak a Command Palette-ből is elérhető. |
 | Reload frameworks from shared file | Újra beolvassa a megosztott frameworks.json-t, anélkül hogy újra kellene indítani Obsidiant. |
+| Workspace tab tartalom keresése | Keresési inputot nyit az aktív workspace-ben megnyitott markdown tab-ok tartalmában. Lásd alább. |
 | [Debug] Reload core Workspaces registry | Kézzel újraalkalmazza a legutóbb betöltött snapshot-ot Obsidian core Workspaces registry-jébe, újraindítás nélkül. Kizárólag hibakereséshez — nincs Settings UI megfelelője. |
+
+---
+
+## Workspace tab tartalom keresése
+
+A **Workspace tab tartalom keresése** parancs teljes szöveges keresést tesz lehetővé az aktív workspace-ben jelenleg megnyitott tab-ok fájljaiban — anélkül, hogy a fájlneveket kézzel kellene felsorolni.
+
+### Hogyan működik
+
+1. A parancs futtatásakor a plugin összegyűjti az aktív workspace összes megnyitott markdown tab-ját. A deferred (háttérbe töltött, dormant) tab-ok előbb betöltődnek, hogy a fájlelérési útjaik biztosan elérhetők legyenek.
+2. Egy kis beviteli modal nyílik meg. Írj be egy keresőkifejezést — sima szöveget vagy regex kifejezést. Több feltétel egyidejű kereséséhez használj `|` elválasztót (pl. `\bwork\b|project|opera`). Nyomj **Enter** a megerősítéshez, vagy **Escape** a megszakításhoz.
+3. Az Obsidian beépített Search panelje megnyílik egy előre felépített query-vel, amely az összegyűjtött fájlokra szűkíti a találatokat, és tartalmazza a beírt keresőkifejezést. A teljes query a vágólapra is kerül, hogy szükség esetén tovább szerkeszthesd.
+
+Ha az aktuális workspace-ben nincs egyetlen megnyitott markdown tab sem, értesítés jelenik meg, és a keresés nem indul el.
+
+### Mire jó ez
+
+Egy mentett workspace jellemzően egy fókuszált kontextus — egy projekt, egy kutatási téma, egy írói session. A keresési parancs lehetővé teszi, hogy pontosan ebben a kontextusban keress, anélkül hogy ismernéd a fájlneveket, vagy manuálisan kelljen mappa-alapú keresési szűrőt beállítani. Kiegészíti a workspace tab-szinkron funkcióját: a tab-okban gondosan összeválogatott fájlok egyben a keresés hatókörét is megadják.
+
+### Megjegyzések
+
+- Csak a **gyökér-szintű** tab-ok (a fő tab-csoport és annak split-jei) kerülnek a hatókörbe. A sidebar panelek nem.
+- Csak **markdown fájlok** kerülnek bele. Canvas, PDF és web viewer tab-ok nem.
+- A keresési query egy `file:` regex szűrőt és egy tartalom-regex feltételt kombinál. Ha a keresőkifejezésed perjelet (`/`) tartalmaz, az automatikusan escape-elődik.
+- A query az `obsidian://search?query=...` URI-n keresztül kerül az Obsidian Search core pluginhoz, ami megnyitja vagy fókuszba hozza a Search panelt.
 
 ---
 
