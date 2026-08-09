@@ -2,6 +2,10 @@
   pointer-events: none;
 }
 
+.pk-fixed {
+  position: fixed;
+}
+
 .pk-absolute {
   position: absolute;
 }
@@ -33,6 +37,10 @@
 
 .pk-z-50 {
   z-index: 50;
+}
+
+.pk-z-\[9999\] {
+  z-index: 9999;
 }
 
 .pk-mt-2 {
@@ -67,6 +75,10 @@
 
 .pk-h-full {
   height: 100%;
+}
+
+.pk-max-h-\[200px\] {
+  max-height: 200px;
 }
 
 .pk-w-72 {
@@ -125,6 +137,10 @@
 
 .pk-overflow-hidden {
   overflow: hidden;
+}
+
+.pk-overflow-y-auto {
+  overflow-y: auto;
 }
 
 .pk-truncate {
@@ -407,6 +423,14 @@
   padding: 20px;
   border-radius: 6px;
   border: 1px solid var(--background-modifier-border);
+}
+
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+.popkit-setting-form [data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
 }
 
 .popkit-setting-form-icon-container {
