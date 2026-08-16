@@ -100,6 +100,13 @@ The final syntax is inserted at the cursor, or replaces the selection.
 
 ---
 
+## Copy-Workspace-URI
+
+**What it does:** Not much: it copies the URI link of the current workspace.  
+
+---
+
+
 ## Search Globally
 
 **What it does:** Searches your entire vault for the selected text, routing the query through Obsidian's built-in search as a *regex* rather than a plain string — which is what actually makes vault-wide search reliable.
