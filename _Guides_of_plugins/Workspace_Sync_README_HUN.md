@@ -235,6 +235,7 @@ bele egy csomó számára ismeretlen parancsba.
 | Reload frameworks from shared file | Újra beolvassa a megosztott frameworks.json-t, anélkül hogy újra kellene indítani Obsidiant. |
 | Workspace tab tartalom keresése | Keresési inputot nyit az aktív workspace-ben megnyitott markdown tab-ok tartalmában. Lásd alább. |
 | [Debug] Reload core Workspaces registry | Kézzel újraalkalmazza a legutóbb betöltött snapshot-ot Obsidian core Workspaces registry-jébe, újraindítás nélkül. Kizárólag hibakereséshez — nincs Settings UI megfelelője. |
+| Load recent workspaces | Megnyit egy a .workspace-sync\recents.json file-ban nyilván tartott listát az utolsó 10 legutóbb használt workspace-ről (időbélyeg szerint csökkenő sorrendben, a legfrissebb felül). Kattintásra betölti az adott workspace-t a core Workspaces pluginon keresztül. Ez csak visszajelzés és gyors navigáció — a rögzítés automatikusan történik minden workspace-belepéskor, függetlenül a "Sync now"-tól. |
 
 ---
 

@@ -218,8 +218,9 @@ unfamiliar commands.
 | Reload frameworks from shared file | Re-reads the shared frameworks.json, without restarting Obsidian. |
 | Search Workspace Tab Content | Opens a search input for the markdown tabs currently open in the active workspace. See below. |
 | [Debug] Reload core Workspaces registry | Manually re-applies the last-loaded snapshot into Obsidian's core Workspaces registry, without restarting. For troubleshooting only — has no Settings UI equivalent. |
+| Load recent workspaces | Opens a .workspace-sync\recents.json recorded list of the last 10 most recently used workspaces (sorted by timestamp, newest first). Clicking an entry loads that workspace via the core Workspaces plugin. This is purely a feedback and quick-navigation aid — the tracking happens automatically on every workspace switch, independent of "Sync now". |
 
----
+--- recorded
 
 ## Search Workspace Tab Content
 
